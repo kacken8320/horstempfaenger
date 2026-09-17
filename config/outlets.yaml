@@ -326,7 +326,7 @@ outlets:
     active: true
 
   - name: Bild
-    tier: "Tier 3"
+    tier: "Tier 4"
     flag: "🇩🇪"
     country:
       de: Deutschland
