@@ -168,21 +168,268 @@ outlets:
     feed_url: null
     active: false
 
-  # --- Tier 3 ---
-  - name: AP
+  # --- Tier 3: große deutsche Publikumsmedien (keine Wire-Agenturen) ---
+  - name: Der Spiegel
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Nachrichtenmagazin, Leitmedium, liberal/Qualität"
+      en: "News magazine, agenda-setting, liberal/quality press"
+    feed_url: "https://www.spiegel.de/schlagzeilen/index.rss"
+    active: true
+
+  - name: Die Zeit
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Wochenzeitung, Leitmedium, liberal/Qualität"
+      en: "Weekly newspaper, agenda-setting, liberal/quality press"
+    feed_url: "https://newsfeed.zeit.de/index"
+    active: true
+
+  - name: Süddeutsche Zeitung
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Tageszeitung, Leitmedium, liberal/Qualität"
+      en: "Daily newspaper, agenda-setting, liberal/quality press"
+    feed_url: "https://rss.sueddeutsche.de/rss/Alles"
+    active: true
+
+  - name: FAZ
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Tageszeitung, Leitmedium, konservativ-liberal/Qualität"
+      en: "Daily newspaper, agenda-setting, conservative-liberal/quality press"
+    feed_url: "https://www.faz.net/rss/aktuell"
+    active: true
+
+  - name: Tagesschau
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "öffentlich-rechtlich (ARD), sachlich/neutral"
+      en: "public broadcaster (ARD), factual/neutral"
+    feed_url: "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml"
+    active: true
+
+  - name: ZDFheute
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "öffentlich-rechtlich (ZDF), sachlich/neutral"
+      en: "public broadcaster (ZDF), factual/neutral"
+    feed_url: "https://www.zdfheute.de/rss/zdf/nachrichten"
+    active: true
+
+  - name: Deutschlandfunk
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "öffentlich-rechtlich (Radio), sachlich/neutral"
+      en: "public broadcaster (radio), factual/neutral"
+    feed_url: "https://www.deutschlandfunk.de/politikportal-100.rss"
+    active: true
+
+  - name: DW
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "staatlich finanzierter Auslandsrundfunk, sachlich/neutral (analog BBC/NHK)"
+      en: "state-funded international broadcaster, factual/neutral (analogous to BBC/NHK)"
+    feed_url: "https://rss.dw.com/xml/rss-de-all"
+    active: true
+
+  - name: Die Welt
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Tageszeitung, konservativ"
+      en: "Daily newspaper, conservative"
+    feed_url: "https://www.welt.de/feeds/latest.rss"
+    active: true
+
+  - name: Handelsblatt
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Wirtschaftszeitung, marktwirtschaftlich-liberal"
+      en: "Business newspaper, market-liberal"
+    feed_url: "https://feeds.cms.handelsblatt.com/schlagzeilen"
+    active: true
+
+  - name: taz
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Tageszeitung, links-alternativ"
+      en: "Daily newspaper, left-alternative"
+    feed_url: "https://taz.de/!p4608;rss/"
+    active: true
+
+  - name: n-tv
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "TV-Nachrichtensender, Boulevard-nah"
+      en: "TV news channel, tabloid-adjacent"
+    feed_url: "https://www.n-tv.de/rss"
+    active: true
+
+  - name: Focus
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Nachrichtenmagazin, Boulevard-nah"
+      en: "News magazine, tabloid-adjacent"
+    feed_url: "https://www.focus.de/rss"
+    active: true
+
+  - name: Bild
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Boulevard/Tabloid, reichweitenstärkste deutsche Tageszeitung"
+      en: "Tabloid, highest-circulation German daily newspaper"
+    feed_url: "https://www.bild.de/feed/alles.xml"
+    active: true
+
+  - name: Stern
+    tier: "Tier 3"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Publikumszeitschrift, sachlich/moderat"
+      en: "General-interest magazine, factual/moderate"
+    feed_url: "https://www.stern.de/feed/standard/all/"
+    active: true
+
+  # --- Tier 3: handverlesene internationale Publikumsmedien ---
+  - name: Japan Times
+    tier: "Tier 3"
+    flag: "🇯🇵"
+    country:
+      de: Japan
+      en: Japan
+    ausrichtung:
+      de: "Tageszeitung, liberal/Qualität"
+      en: "Daily newspaper, liberal/quality press"
+    feed_url: "https://www.japantimes.co.jp/feed/"
+    active: true
+
+  - name: NZZ
+    tier: "Tier 3"
+    flag: "🇨🇭"
+    country:
+      de: Schweiz
+      en: Switzerland
+    ausrichtung:
+      de: "Tageszeitung, liberal-konservativ/Qualität"
+      en: "Daily newspaper, liberal-conservative/quality press"
+    feed_url: "https://www.nzz.ch/recent.rss"
+    active: true
+
+  - name: BBC
+    tier: "Tier 3"
+    flag: "🇬🇧"
+    country:
+      de: Vereinigtes Königreich
+      en: United Kingdom
+    ausrichtung:
+      de: "öffentlich-rechtlich, sachlich/neutral"
+      en: "public broadcaster, factual/neutral"
+    feed_url: "http://feeds.bbci.co.uk/news/rss.xml"
+    active: true
+
+  - name: The Guardian
+    tier: "Tier 3"
+    flag: "🇬🇧"
+    country:
+      de: Vereinigtes Königreich
+      en: United Kingdom
+    ausrichtung:
+      de: "Tageszeitung, links-liberal/Qualität"
+      en: "Daily newspaper, left-liberal/quality press"
+    feed_url: "https://www.theguardian.com/uk/rss"
+    active: true
+
+  - name: New York Times
     tier: "Tier 3"
     flag: "🇺🇸"
     country:
       de: USA
       en: USA
     ausrichtung:
-      de: "Nachrichtenagentur, sachlich/neutral"
-      en: "Wire service, factual/neutral"
-    # Wie Reuters: kein offizieller RSS-Feed mehr, apnews.com selbst laesst sich
-    # nicht sauber scrapen -> Google News RSS gescoped auf site:apnews.com.
-    # Liefert echte AP-Artikel (Quelle "AP News"), aber keinen echten Body.
-    feed_url: "https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en"
-    source_type: google_news
-    feed_language: en
-    google_news_source: "AP News"
+      de: "Tageszeitung, liberal/Qualität"
+      en: "Daily newspaper, liberal/quality press"
+    feed_url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+    active: true
+
+  - name: SCMP
+    tier: "Tier 3"
+    flag: "🇭🇰"
+    country:
+      de: Hongkong
+      en: Hong Kong
+    ausrichtung:
+      de: "Tageszeitung, privat (Alibaba-Eigentum), Qualität"
+      en: "Daily newspaper, privately owned (Alibaba), quality press"
+    feed_url: "https://www.scmp.com/rss/91/feed"
+    active: true
+
+  - name: ABC News Australia
+    tier: "Tier 3"
+    flag: "🇦🇺"
+    country:
+      de: Australien
+      en: Australia
+    ausrichtung:
+      de: "öffentlich-rechtlich, sachlich/neutral"
+      en: "public broadcaster, factual/neutral"
+    feed_url: "https://www.abc.net.au/news/feed/51120/rss.xml"
     active: true

@@ -9,7 +9,7 @@ from src.discord import DiscordPoster
 from src.feeds import fetch_articles
 from src.lang import ALLOWED_LANGUAGES, detect_language
 from src.state import StateStore
-from src.textutils import strip_html, strip_source_suffix
+from src.textutils import clean_author, strip_html, strip_source_suffix
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,6 +34,9 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
         except Exception:
             logger.exception("Fehler beim Abrufen von %s", outlet.name)
             continue
+
+        for article in articles:
+            article.author = clean_author(article.author)
 
         if outlet.source_type == "google_news":
             # Google News liefert keinen echten Artikel-Body (nur Titel+Quellen-
