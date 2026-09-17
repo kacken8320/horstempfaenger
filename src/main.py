@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from src.config import DATA_DIR, load_outlets, load_settings
 from src.discord import DiscordPoster
@@ -104,20 +105,46 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
         )
 
 
+def _next_scheduled_run(now_utc: datetime, hours: list[int], tz: ZoneInfo) -> datetime:
+    """Naechster Zeitpunkt aus `hours` (lokale Stunden in `tz`), der nach
+    `now_utc` liegt. `hours` muss aufsteigend sortiert sein."""
+    local_now = now_utc.astimezone(tz)
+    for day_offset in (0, 1):
+        day = local_now.date() + timedelta(days=day_offset)
+        for hour in hours:
+            candidate = datetime(day.year, day.month, day.day, hour, tzinfo=tz)
+            if candidate > local_now:
+                return candidate.astimezone(timezone.utc)
+    raise AssertionError("schedule_hours darf nicht leer sein")
+
+
 def main() -> None:
     settings = load_settings()
     poster = DiscordPoster(settings.discord_webhook_url, settings.discord_min_interval_seconds)
     state = StateStore(DATA_DIR / "state.db")
+    tz = ZoneInfo(settings.schedule_timezone)
 
     startup_outlets = load_outlets()
     active_names = [o.name for o in startup_outlets if o.active]
-    logger.info("Starte RSS-Scraper, Poll-Intervall=%ss", settings.poll_interval_seconds)
+    logger.info(
+        "Starte RSS-Scraper, feste Laufzeiten (%s): %s Uhr",
+        settings.schedule_timezone,
+        ", ".join(f"{h:02d}:00" for h in settings.schedule_hours),
+    )
     logger.info("Aktive Outlets: %s", ", ".join(active_names) if active_names else "(keine)")
     try:
         while True:
             outlets = load_outlets()  # neu laden, damit neue feed_urls ohne Neustart greifen
             run_cycle(outlets, state, poster, settings)
-            time.sleep(settings.poll_interval_seconds)
+
+            next_run = _next_scheduled_run(datetime.now(timezone.utc), settings.schedule_hours, tz)
+            sleep_seconds = (next_run - datetime.now(timezone.utc)).total_seconds()
+            logger.info(
+                "Naechster Lauf: %s Uhr (%s)",
+                next_run.astimezone(tz).strftime("%d.%m. %H:%M"),
+                settings.schedule_timezone,
+            )
+            time.sleep(max(sleep_seconds, 0))
     except KeyboardInterrupt:
         logger.info("Beendet durch Benutzer.")
     finally:

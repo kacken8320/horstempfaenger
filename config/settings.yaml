@@ -1,7 +1,13 @@
 # Globale Einstellungen für den RSS-Scraper.
 
-# Wie oft (in Sekunden) alle aktiven Feeds neu gepollt werden.
-poll_interval_seconds: 300
+# Feste Uhrzeiten (lokale Zeit in schedule_timezone), zu denen alle aktiven
+# Feeds gecheckt werden - statt eines Dauerpollings alle paar Minuten. Gepostet
+# wird bei jedem Lauf ohnehin nur, was seit dem letzten Lauf neu im Feed ist.
+schedule_hours: [2, 5, 8, 11, 14, 17, 20, 23]
+
+# IANA-Zeitzone fuer schedule_hours, unabhaengig von der Serverzeitzone des
+# Deployments (z.B. Railway laeuft i.d.R. auf UTC).
+schedule_timezone: "Europe/Berlin"
 
 # Beim allerersten Lauf eines Outlets: falls true, werden bereits vorhandene
 # Feed-Einträge sofort gepostet (kann zu einem Schwall alter Artikel führen).
@@ -12,7 +18,7 @@ initial_backfill: false
 # Nur relevant wenn initial_backfill: false. Postet beim allerersten Lauf
 # eines Outlets trotzdem die N neuesten Artikel (statt nur stumm zu markieren)
 # - praktisch zum Testen, ob der Discord-Post wirklich ankommt. 0 = aus.
-initial_backfill_sample: 1
+initial_backfill_sample: 0
 
 # Zeichenlimit für den Content/Summary-Teil der Discord-Nachricht.
 content_max_chars: 500

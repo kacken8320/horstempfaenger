@@ -42,12 +42,18 @@ def strip_source_suffix(title: str, source_name: str) -> str:
 
 
 _ZEIT_CREATOR_PREFIX_RE = re.compile(r"^DIE ZEIT: [^-]*-\s*")
+_NUMERIC_RE = re.compile(r"^\d+$")
 
 
 def clean_author(author: str) -> str:
     """Zeit haengt an dc:creator ein Ressort-Praefix an, z.B. "DIE ZEIT:
     Ausland - Ulrich Ladurner" oder "DIE ZEIT: News - " ohne Autor."""
-    return _ZEIT_CREATOR_PREFIX_RE.sub("", author).strip()
+    author = _ZEIT_CREATOR_PREFIX_RE.sub("", author).strip()
+    if _NUMERIC_RE.match(author):
+        # NL Times liefert im author-Feld bei jedem Artikel nur eine interne
+        # CMS-User-ID (z.B. "91810") statt eines Namens - kein echter Autor.
+        return ""
+    return author
 
 
 def parenthesize_first_clause(text: str) -> str:

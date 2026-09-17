@@ -433,3 +433,246 @@ outlets:
       en: "public broadcaster, factual/neutral"
     feed_url: "https://www.abc.net.au/news/feed/51120/rss.xml"
     active: true
+
+  # --- Tier 4: internationale Publikumsmedien, breitere Länderabdeckung ---
+  - name: El País
+    tier: "Tier 4"
+    flag: "🇪🇸"
+    country:
+      de: Spanien
+      en: Spain
+    ausrichtung:
+      de: "Tageszeitung, Mitte-links/Qualität"
+      en: "Daily newspaper, centre-left/quality press"
+    feed_url: "https://feeds.elpais.com/mrss-s/pages/ep/site/english.elpais.com/portada"
+    active: true
+
+  - name: France 24
+    tier: "Tier 4"
+    flag: "🇫🇷"
+    country:
+      de: Frankreich
+      en: France
+    ausrichtung:
+      de: "staatlich finanzierter Auslandssender, sachlich/neutral (analog DW/BBC)"
+      en: "state-funded international broadcaster, factual/neutral (analogous to DW/BBC)"
+    feed_url: "https://www.france24.com/en/rss"
+    active: true
+
+  - name: Le Monde
+    tier: "Tier 4"
+    flag: "🇫🇷"
+    country:
+      de: Frankreich
+      en: France
+    ausrichtung:
+      de: "Tageszeitung, Leitmedium, Mitte-links/Qualität"
+      en: "Daily newspaper, agenda-setting, centre-left/quality press"
+    # Kanalname/Description im Feed sind auf Französisch (Betreiberseite ist
+    # mehrsprachig), die Artikel selbst laufen über den /en/-Pfad auf Englisch.
+    feed_url: "https://www.lemonde.fr/en/rss/une.xml"
+    active: true
+
+  - name: The Hindu
+    tier: "Tier 4"
+    flag: "🇮🇳"
+    country:
+      de: Indien
+      en: India
+    ausrichtung:
+      de: "Tageszeitung, liberal/Qualität"
+      en: "Daily newspaper, liberal/quality press"
+    feed_url: "https://www.thehindu.com/feeder/default.rss"
+    active: true
+
+  - name: Times of India
+    tier: "Tier 4"
+    flag: "🇮🇳"
+    country:
+      de: Indien
+      en: India
+    ausrichtung:
+      de: "Tageszeitung, reichweitenstärkste englischsprachige Zeitung Indiens, kommerziell/massenmarkt-orientiert"
+      en: "Daily newspaper, India's highest-circulation English paper, commercial/mass-market"
+    feed_url: "https://timesofindia.indiatimes.com/rssfeedstopstories.cms"
+    active: true
+
+  - name: NPR
+    tier: "Tier 4"
+    flag: "🇺🇸"
+    country:
+      de: USA
+      en: USA
+    ausrichtung:
+      de: "gemeinnütziger öffentlicher Rundfunk, sachlich, teils als liberal-lastig wahrgenommen"
+      en: "non-profit public broadcaster, factual, sometimes perceived as centre-left leaning"
+    feed_url: "https://feeds.npr.org/1001/rss.xml"
+    active: true
+
+  - name: CBC
+    tier: "Tier 4"
+    flag: "🇨🇦"
+    country:
+      de: Kanada
+      en: Canada
+    ausrichtung:
+      de: "öffentlich-rechtlich, sachlich/neutral"
+      en: "public broadcaster, factual/neutral"
+    feed_url: "https://www.cbc.ca/webfeed/rss/rss-topstories"
+    active: true
+
+  - name: Mexico News Daily
+    tier: "Tier 4"
+    flag: "🇲🇽"
+    country:
+      de: Mexiko
+      en: Mexico
+    ausrichtung:
+      de: "englischsprachiges Nachrichtenportal für Expats, sachlich"
+      en: "English-language expat-focused news outlet, factual"
+    feed_url: "https://mexiconewsdaily.com/feed/"
+    active: true
+
+  - name: Rio Times
+    tier: "Tier 4"
+    flag: "🇧🇷"
+    country:
+      de: Brasilien
+      en: Brazil
+    ausrichtung:
+      de: "englischsprachiges Nachrichtenportal für Expats/Wirtschaft, sachlich"
+      en: "English-language expat/business news outlet, factual"
+    feed_url: "https://www.riotimesonline.com/feed/"
+    active: true
+
+  - name: Premium Times
+    tier: "Tier 4"
+    flag: "🇳🇬"
+    country:
+      de: Nigeria
+      en: Nigeria
+    ausrichtung:
+      de: "digital-natives Nachrichtenportal, investigativ/Qualität"
+      en: "digital-native newspaper, investigative/quality press"
+    feed_url: "https://www.premiumtimesng.com/feed"
+    active: true
+
+  - name: Macau Daily Times
+    tier: "Tier 4"
+    flag: "🇲🇴"
+    country:
+      de: Macau
+      en: Macau
+    ausrichtung:
+      de: "englischsprachige Tageszeitung, sachlich"
+      en: "English-language daily newspaper, factual"
+    feed_url: "https://macaudailytimes.com.mo/feed"
+    active: true
+
+  - name: Taipei Times
+    tier: "Tier 4"
+    flag: "🇹🇼"
+    country:
+      de: Taiwan
+      en: Taiwan
+    ausrichtung:
+      de: "englischsprachige Tageszeitung, liberal, taiwan-zentrierte Perspektive"
+      en: "English-language daily newspaper, liberal, Taiwan-centric perspective"
+    feed_url: "https://www.taipeitimes.com/xml/index.rss"
+    active: true
+
+  - name: Yonhap
+    tier: "Tier 4"
+    flag: "🇰🇷"
+    country:
+      de: Südkorea
+      en: South Korea
+    ausrichtung:
+      de: "Nachrichtenagentur, quasi-staatlich (Südkorea), sachlich/neutral"
+      en: "Wire service, quasi state-affiliated (South Korea), factual/neutral"
+    feed_url: "https://en.yna.co.kr/RSS/news.xml"
+    active: true
+
+  - name: Korea Herald
+    tier: "Tier 4"
+    flag: "🇰🇷"
+    country:
+      de: Südkorea
+      en: South Korea
+    ausrichtung:
+      de: "englischsprachige Tageszeitung, Mitte"
+      en: "English-language daily newspaper, centrist"
+    feed_url: "https://www.koreaherald.com/rss/newsAll"
+    active: true
+
+  - name: VnExpress International
+    tier: "Tier 4"
+    flag: "🇻🇳"
+    country:
+      de: Vietnam
+      en: Vietnam
+    ausrichtung:
+      de: "Nachrichtenportal im staatlich kontrollierten Medienumfeld Vietnams (Pressezensur-Gesetzgebung), sachlich im Rahmen dessen"
+      en: "News outlet operating within Vietnam's state-controlled media environment (press censorship laws), factual within that constraint"
+    feed_url: "https://e.vnexpress.net/rss/news.rss"
+    active: true
+
+  - name: Notes from Poland
+    tier: "Tier 4"
+    flag: "🇵🇱"
+    country:
+      de: Polen
+      en: Poland
+    ausrichtung:
+      de: "unabhängiges englischsprachiges Nachrichtenportal zu Polen, sachlich"
+      en: "independent English-language news outlet focused on Poland, factual"
+    feed_url: "https://notesfrompoland.com/feed/"
+    active: true
+
+  - name: NL Times
+    tier: "Tier 4"
+    flag: "🇳🇱"
+    country:
+      de: Niederlande
+      en: Netherlands
+    ausrichtung:
+      de: "englischsprachiges Nachrichtenportal, Boulevard-nah"
+      en: "English-language news outlet, tabloid-adjacent"
+    feed_url: "https://nltimes.nl/rss.xml"
+    active: true
+
+  - name: DutchNews.nl
+    tier: "Tier 4"
+    flag: "🇳🇱"
+    country:
+      de: Niederlande
+      en: Netherlands
+    ausrichtung:
+      de: "unabhängiges englischsprachiges Nachrichtenportal, sachlich/Qualität"
+      en: "independent English-language news outlet, factual/quality press"
+    feed_url: "https://www.dutchnews.nl/feed/"
+    active: true
+
+  - name: ANSA
+    tier: "Tier 4"
+    flag: "🇮🇹"
+    country:
+      de: Italien
+      en: Italy
+    ausrichtung:
+      de: "Nachrichtenagentur, Genossenschaft, sachlich/neutral"
+      en: "Wire service, cooperative, factual/neutral"
+    feed_url: "https://www.ansa.it/english/news/english_nr_rss.xml"
+    active: true
+
+  - name: Mail & Guardian
+    tier: "Tier 4"
+    flag: "🇿🇦"
+    country:
+      de: Südafrika
+      en: South Africa
+    ausrichtung:
+      de: "Wochenzeitung, unabhängig, investigativ/Qualität"
+      en: "Weekly newspaper, independent, investigative/quality press"
+    feed_url: "https://mg.co.za/rss/"
+    active: true
