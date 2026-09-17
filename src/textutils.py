@@ -3,10 +3,16 @@ from __future__ import annotations
 import re
 
 _TAG_RE = re.compile(r"<[^>]+>")
+_ANCHOR_RE = re.compile(r"<a\b[^>]*>.*?</a>", re.IGNORECASE | re.DOTALL)
 
 
 def strip_html(text: str) -> str:
-    return re.sub(r"\s+", " ", _TAG_RE.sub("", text)).strip()
+    # <a>...</a> komplett raus (typisch "Read full story here"/"Continue
+    # reading"-Boilerplate, die eigentliche URL steht eh separat im Feld).
+    text = _ANCHOR_RE.sub(" ", text)
+    # Tags durch Leerzeichen statt "" ersetzen, sonst kleben Woerter ueber
+    # Tag-Grenzen (z.B. "</p><a>") aneinander.
+    return re.sub(r"\s+", " ", _TAG_RE.sub(" ", text)).strip()
 
 
 def truncate(text: str, max_chars: int) -> str:

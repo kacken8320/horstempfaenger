@@ -47,8 +47,12 @@ outlets:
     ausrichtung:
       de: "Nachrichtenagentur, sachlich/neutral"
       en: "Wire service, factual/neutral"
-    feed_url: null
-    active: false
+    # echter offizieller Feed ("Japan Wire by Kyodo News", ihre englische
+    # Wire-Marke) - nur auf der Homepage verlinkt, nicht dokumentiert.
+    # Echte Summaries vorhanden -> Sprache wird ganz normal pro Artikel erkannt,
+    # kein feed_language-Override wie bei Reuters noetig.
+    feed_url: "https://english.kyodonews.net/list/feed/rss4kyodonews-fzone"
+    active: true
 
   - name: dpa
     tier: T1
