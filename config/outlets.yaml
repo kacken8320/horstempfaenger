@@ -473,18 +473,6 @@ outlets:
     feed_url: "https://www.lemonde.fr/en/rss/une.xml"
     active: true
 
-  - name: The Hindu
-    tier: "Tier 4"
-    flag: "🇮🇳"
-    country:
-      de: Indien
-      en: India
-    ausrichtung:
-      de: "Tageszeitung, liberal/Qualität"
-      en: "Daily newspaper, liberal/quality press"
-    feed_url: "https://www.thehindu.com/feeder/default.rss"
-    active: true
-
   - name: Times of India
     tier: "Tier 4"
     flag: "🇮🇳"
@@ -543,18 +531,6 @@ outlets:
       de: "englischsprachiges Nachrichtenportal für Expats/Wirtschaft, sachlich"
       en: "English-language expat/business news outlet, factual"
     feed_url: "https://www.riotimesonline.com/feed/"
-    active: true
-
-  - name: Premium Times
-    tier: "Tier 4"
-    flag: "🇳🇬"
-    country:
-      de: Nigeria
-      en: Nigeria
-    ausrichtung:
-      de: "digital-natives Nachrichtenportal, investigativ/Qualität"
-      en: "digital-native newspaper, investigative/quality press"
-    feed_url: "https://www.premiumtimesng.com/feed"
     active: true
 
   - name: Macau Daily Times
