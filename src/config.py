@@ -34,8 +34,7 @@ class Outlet:
 
 @dataclass
 class Settings:
-    schedule_hours: list[int]
-    schedule_timezone: str
+    poll_interval_seconds: int
     initial_backfill: bool
     initial_backfill_sample: int
     content_max_chars: int
@@ -81,8 +80,7 @@ def load_settings(path: Path = CONFIG_DIR / "settings.yaml") -> Settings:
         )
 
     return Settings(
-        schedule_hours=sorted({int(h) for h in raw.get("schedule_hours", [2, 5, 8, 11, 14, 17, 20, 23])}),
-        schedule_timezone=str(raw.get("schedule_timezone", "Europe/Berlin")),
+        poll_interval_seconds=int(raw.get("poll_interval_seconds", 300)),
         initial_backfill=bool(raw.get("initial_backfill", False)),
         initial_backfill_sample=int(raw.get("initial_backfill_sample", 0)),
         content_max_chars=int(raw.get("content_max_chars", 500)),
