@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from src.config import DATA_DIR, load_outlets, load_settings
 from src.discord import DiscordPoster
@@ -18,6 +18,12 @@ logging.basicConfig(
 logger = logging.getLogger("main")
 
 EPOCH = datetime.min.replace(tzinfo=timezone.utc)
+
+# Nur Artikel posten, deren published-Datum tatsaechlich in diesem Fenster um
+# "jetzt" liegt - sonst wuerden ueber die reine "kennen wir noch nicht"-Dedup
+# auch mal Artikel mit x-beliebig altem Datum durchrutschen (z.B. wenn ein Feed
+# einen alten Artikel neu einsortiert, oder nach einer Downtime).
+MAX_ARTICLE_AGE = timedelta(minutes=5)
 
 
 def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> None:
@@ -67,7 +73,9 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
 
         posted_count = 0
         skipped_language_count = 0
+        skipped_stale_count = 0
         already_known_count = 0
+        now = datetime.now(timezone.utc)
 
         for article in sorted(articles, key=lambda a: a.published or EPOCH):
             if state.is_known(outlet.name, article.key):
@@ -76,6 +84,15 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
 
             if first_run and not settings.initial_backfill and article.key not in sample_keys:
                 state.mark_seen(outlet.name, article.key, posted=False)
+                continue
+
+            if article.published is None or abs(now - article.published) > MAX_ARTICLE_AGE:
+                logger.info(
+                    "Übersprungen (nicht innerhalb der letzten %d Min., Datum: %s): %s",
+                    MAX_ARTICLE_AGE.seconds // 60, article.published, article.title,
+                )
+                state.mark_seen(outlet.name, article.key, posted=False)
+                skipped_stale_count += 1
                 continue
 
             if outlet.feed_language:
@@ -99,8 +116,10 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 logger.info("Gepostet [%s]: [%s] %s - %s", language, outlet.tier, outlet.name, article.title)
 
         logger.info(
-            "%s: %d Artikel im Feed, %d neu gepostet, %d wegen Sprache übersprungen, %d schon bekannt.",
-            outlet.name, len(articles), posted_count, skipped_language_count, already_known_count,
+            "%s: %d Artikel im Feed, %d neu gepostet, %d wegen Sprache übersprungen, "
+            "%d zu alt/ohne Datum übersprungen, %d schon bekannt.",
+            outlet.name, len(articles), posted_count, skipped_language_count,
+            skipped_stale_count, already_known_count,
         )
 
 
