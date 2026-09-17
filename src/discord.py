@@ -19,14 +19,6 @@ TIER_COLORS = {
 }
 DEFAULT_COLOR = 0x2C3E50
 
-TIER_EMOJI = {
-    "T1": "🥇",
-    "T2": "🥈",
-    "T3": "🥉",
-    "T4": "⚠️",
-    "T5": "👵",
-}
-
 TIER_DESCRIPTIONS = {
     "de": {
         "T1": "sehr verlässliche Quelle",
@@ -48,12 +40,12 @@ LABELS = {
     "de": {
         "unknown_date": "unbekannt",
         "no_title": "(ohne Titel)",
-        "date_format": "%d.%m.%Y %H:%M UTC",
+        "date_format": "%d.%m.%Y",
     },
     "en": {
         "unknown_date": "unknown",
         "no_title": "(no title)",
-        "date_format": "%Y-%m-%d %H:%M UTC",
+        "date_format": "%d.%m.%Y",
     },
 }
 
@@ -88,7 +80,7 @@ class DiscordPoster:
 
         header = "\n".join(
             [
-                f"{TIER_EMOJI.get(outlet.tier, '')} {outlet.tier} ({tier_description})".strip(),
+                f"{outlet.tier} ({tier_description})",
                 f"{outlet.flag} {outlet.name} {parenthesize_first_clause(outlet.ausrichtung_for(language))}".strip(),
                 date_line,
             ]
