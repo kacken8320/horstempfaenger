@@ -1,18 +1,30 @@
 from __future__ import annotations
 
+import html
 import re
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _ANCHOR_RE = re.compile(r"<a\b[^>]*>.*?</a>", re.IGNORECASE | re.DOTALL)
+# WordPress haengt an RSS-Excerpts standardmaessig "The post <a>Titel</a>
+# appeared first on <a>Site</a>." an (z.B. bei PA Media) - reine Feed-
+# Boilerplate, kein Artikelinhalt.
+_WP_APPEARED_FIRST_RE = re.compile(
+    r"<p>\s*The post .*?appeared first on .*?</p>\s*$", re.IGNORECASE | re.DOTALL
+)
 
 
 def strip_html(text: str) -> str:
+    text = _WP_APPEARED_FIRST_RE.sub("", text)
     # <a>...</a> komplett raus (typisch "Read full story here"/"Continue
     # reading"-Boilerplate, die eigentliche URL steht eh separat im Feld).
     text = _ANCHOR_RE.sub(" ", text)
     # Tags durch Leerzeichen statt "" ersetzen, sonst kleben Woerter ueber
     # Tag-Grenzen (z.B. "</p><a>") aneinander.
-    return re.sub(r"\s+", " ", _TAG_RE.sub(" ", text)).strip()
+    text = re.sub(r"\s+", " ", _TAG_RE.sub(" ", text)).strip()
+    # Manche Feeds (z.B. PA Media) liefern in CDATA-Blocks numerische
+    # HTML-Entities, die feedparser nicht selbst dekodiert (CDATA ist fuer den
+    # XML-Parser literaler Text) - daher hier explizit nachholen.
+    return html.unescape(text)
 
 
 def truncate(text: str, max_chars: int) -> str:

@@ -12,27 +12,27 @@ from src.textutils import parenthesize_first_clause, strip_html, truncate
 logger = logging.getLogger(__name__)
 
 TIER_COLORS = {
-    "T1": 0xE67E22,  # orange
-    "T2": 0x3498DB,  # blue
-    "T3": 0x95A5A6,  # grey
-    "T4": 0x7F8C8D,  # dark grey
+    "Tier 1": 0xE67E22,  # orange
+    "Tier 2": 0x3498DB,  # blue
+    "Tier 3": 0x95A5A6,  # grey
+    "Tier 4": 0x7F8C8D,  # dark grey
 }
 DEFAULT_COLOR = 0x2C3E50
 
 TIER_DESCRIPTIONS = {
     "de": {
-        "T1": "sehr verlässliche Quelle",
-        "T2": "sehr verlässliche Quelle",
-        "T3": "verlässliche Quelle",
-        "T4": "tendenziös, aber verlässlich",
-        "T5": "meine Mama hat's erzählt",
+        "Tier 1": "sehr verlässliche Quelle",
+        "Tier 2": "sehr verlässliche Quelle",
+        "Tier 3": "verlässliche Quelle",
+        "Tier 4": "tendenziös, aber verlässlich",
+        "Tier 5": "meine Mama hat's erzählt",
     },
     "en": {
-        "T1": "very reliable source",
-        "T2": "very reliable source",
-        "T3": "reliable source",
-        "T4": "biased but reliable source",
-        "T5": "my mom told me",
+        "Tier 1": "very reliable source",
+        "Tier 2": "very reliable source",
+        "Tier 3": "reliable source",
+        "Tier 4": "biased but reliable source",
+        "Tier 5": "my mom told me",
     },
 }
 
