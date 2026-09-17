@@ -27,7 +27,6 @@ LABELS = {
         "ausrichtung": "Grobe Ausrichtung",
         "author": "Autor",
         "date": "Datum",
-        "further_reading": "Weiterlesen",
         "no_summary": "(keine Zusammenfassung verfügbar)",
         "unknown_author": "unbekannt",
         "unknown_date": "unbekannt",
@@ -41,7 +40,6 @@ LABELS = {
         "ausrichtung": "Rough Orientation",
         "author": "Author",
         "date": "Date",
-        "further_reading": "Further reading",
         "no_summary": "(no summary available)",
         "unknown_author": "unknown",
         "unknown_date": "unknown",
@@ -73,24 +71,28 @@ class DiscordPoster:
         )
         summary = truncate(strip_html(article.summary), content_max_chars) or labels["no_summary"]
 
+        # Metadaten als Tab-ausgerichtete Zeilen untereinander statt als separate
+        # Discord-Felder - Titel ist per embed.url schon klickbar, kein Link-Feld noetig.
+        metadata = "\n".join(
+            [
+                f"{labels['tier']}:\t{outlet.tier}",
+                f"{labels['outlet']}:\t{outlet.name}",
+                f"{labels['country']}:\t{outlet.country_for(language)}",
+                f"{labels['ausrichtung']}:\t{outlet.ausrichtung_for(language)}",
+                f"{labels['author']}:\t{article.author or labels['unknown_author']}",
+                f"{labels['date']}:\t{date_str}",
+            ]
+        )
+
         embed = {
             "title": truncate(article.title, 256) or labels["no_title"],
             "url": article.link or None,
             "description": summary,
             "color": TIER_COLORS.get(outlet.tier, DEFAULT_COLOR),
             "fields": [
-                {"name": labels["tier"], "value": outlet.tier, "inline": True},
-                {"name": labels["outlet"], "value": outlet.name, "inline": True},
-                {"name": labels["country"], "value": outlet.country_for(language), "inline": True},
-                {"name": labels["ausrichtung"], "value": outlet.ausrichtung_for(language), "inline": False},
-                {"name": labels["author"], "value": article.author or labels["unknown_author"], "inline": True},
-                {"name": labels["date"], "value": date_str, "inline": True},
+                {"name": "​", "value": f"```\n{metadata}\n```", "inline": False},
             ],
         }
-        if article.link:
-            embed["fields"].append(
-                {"name": labels["further_reading"], "value": article.link, "inline": False}
-            )
 
         payload = {"embeds": [embed]}
         return self._send(payload)
