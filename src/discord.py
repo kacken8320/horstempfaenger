@@ -7,7 +7,7 @@ import requests
 
 from src.config import Outlet
 from src.feeds import Article
-from src.textutils import strip_html, truncate
+from src.textutils import parenthesize_first_clause, strip_html, truncate
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +19,38 @@ TIER_COLORS = {
 }
 DEFAULT_COLOR = 0x2C3E50
 
+TIER_EMOJI = {
+    "T1": "🥇",
+    "T2": "🥈",
+    "T3": "🥉",
+    "T4": "⚠️",
+    "T5": "👵",
+}
+
+TIER_DESCRIPTIONS = {
+    "de": {
+        "T1": "sehr verlässliche Quelle",
+        "T2": "sehr verlässliche Quelle",
+        "T3": "verlässliche Quelle",
+        "T4": "tendenziös, aber verlässlich",
+        "T5": "meine Mama hat's erzählt",
+    },
+    "en": {
+        "T1": "very reliable source",
+        "T2": "very reliable source",
+        "T3": "reliable source",
+        "T4": "biased but reliable source",
+        "T5": "my mom told me",
+    },
+}
+
 LABELS = {
     "de": {
-        "no_summary": "(keine Zusammenfassung verfügbar)",
-        "unknown_author": "unbekannt",
         "unknown_date": "unbekannt",
         "no_title": "(ohne Titel)",
         "date_format": "%d.%m.%Y %H:%M UTC",
     },
     "en": {
-        "no_summary": "(no summary available)",
-        "unknown_author": "unknown",
         "unknown_date": "unknown",
         "no_title": "(no title)",
         "date_format": "%Y-%m-%d %H:%M UTC",
@@ -51,29 +72,33 @@ class DiscordPoster:
 
     def post_article(self, outlet: Outlet, article: Article, content_max_chars: int, language: str) -> bool:
         labels = LABELS.get(language, LABELS["en"])
+        tier_description = TIER_DESCRIPTIONS.get(language, TIER_DESCRIPTIONS["en"]).get(outlet.tier, "")
 
         date_str = (
             article.published.strftime(labels["date_format"])
             if article.published
             else labels["unknown_date"]
         )
-        summary = truncate(strip_html(article.summary), content_max_chars) or labels["no_summary"]
-        author = article.author or labels["unknown_author"]
-        outlet_line = f"{outlet.flag} {outlet.name}".strip()
+        date_line = f"{date_str} - {article.author}" if article.author else date_str
+        summary = truncate(strip_html(article.summary), content_max_chars)
+        if summary.strip().lower() == article.title.strip().lower():
+            # Manche Feeds (z.B. Kyodo "BREAKING NEWS:"-Alerts) liefern als
+            # "summary" nur den Titel nochmal - keine echte Zusatzinfo.
+            summary = ""
 
         header = "\n".join(
             [
-                outlet.tier,
-                outlet_line,
-                f"({outlet.ausrichtung_for(language)})",
-                f"{date_str} - {author}",
+                f"{TIER_EMOJI.get(outlet.tier, '')} {outlet.tier} ({tier_description})".strip(),
+                f"{outlet.flag} {outlet.name} {parenthesize_first_clause(outlet.ausrichtung_for(language))}".strip(),
+                date_line,
             ]
         )
+        description = f"{header}\n\n{summary}" if summary else header
 
         embed = {
             "title": truncate(article.title, 256) or labels["no_title"],
             "url": article.link or None,
-            "description": f"{header}\n\n{summary}",
+            "description": description,
             "color": TIER_COLORS.get(outlet.tier, DEFAULT_COLOR),
         }
 

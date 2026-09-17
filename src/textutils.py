@@ -27,3 +27,11 @@ def strip_source_suffix(title: str, source_name: str) -> str:
     if title.endswith(suffix):
         return title[: -len(suffix)].rstrip()
     return title
+
+
+def parenthesize_first_clause(text: str) -> str:
+    """"Wire service, factual/neutral" -> "(Wire service), factual/neutral"."""
+    head, sep, rest = text.partition(",")
+    if not sep:
+        return f"({text})"
+    return f"({head}){sep}{rest}"

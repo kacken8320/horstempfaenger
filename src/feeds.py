@@ -67,9 +67,9 @@ def fetch_articles(feed_url: str) -> list[Article]:
         articles.append(
             Article(
                 key=key,
-                title=entry.get("title", "(ohne Titel)").strip(),
+                title=(entry.get("title") or "").strip(),
                 link=entry.get("link", ""),
-                author=entry.get("author", "unbekannt").strip(),
+                author=(entry.get("author") or "").strip(),
                 published=_entry_datetime(entry),
                 summary=(entry.get("summary") or "").strip(),
                 source_title=entry.get("source", {}).get("title"),
