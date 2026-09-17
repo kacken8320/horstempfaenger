@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -10,6 +11,10 @@ from src.feeds import Article
 from src.textutils import parenthesize_first_clause, strip_html, truncate
 
 logger = logging.getLogger(__name__)
+
+# Artikel-Zeitstempel kommen als UTC aus dem Feed (siehe feeds.py), fuer die
+# Anzeige aber auf Ortszeit umrechnen statt rohes UTC zu zeigen.
+DISPLAY_TZ = ZoneInfo("Europe/Berlin")
 
 TIER_COLORS = {
     "Tier 1": 0xE67E22,  # orange
@@ -24,15 +29,13 @@ TIER_DESCRIPTIONS = {
         "Tier 1": "sehr verlässliche Quelle",
         "Tier 2": "sehr verlässliche Quelle",
         "Tier 3": "verlässliche Quelle",
-        "Tier 4": "tendenziös, aber verlässlich",
-        "Tier 5": "meine Mama hat's erzählt",
+        "Tier 4": "my mom told me",
     },
     "en": {
         "Tier 1": "very reliable source",
         "Tier 2": "very reliable source",
         "Tier 3": "reliable source",
-        "Tier 4": "biased but reliable source",
-        "Tier 5": "my mom told me",
+        "Tier 4": "my mom told me",
     },
 }
 
@@ -40,12 +43,12 @@ LABELS = {
     "de": {
         "unknown_date": "unbekannt",
         "no_title": "(ohne Titel)",
-        "date_format": "%d.%m.%Y",
+        "date_format": "%d.%m.%Y %H:%M",
     },
     "en": {
         "unknown_date": "unknown",
         "no_title": "(no title)",
-        "date_format": "%d.%m.%Y",
+        "date_format": "%d.%m.%Y %H:%M",
     },
 }
 
@@ -67,7 +70,7 @@ class DiscordPoster:
         tier_description = TIER_DESCRIPTIONS.get(language, TIER_DESCRIPTIONS["en"]).get(outlet.tier, "")
 
         date_str = (
-            article.published.strftime(labels["date_format"])
+            article.published.astimezone(DISPLAY_TZ).strftime(labels["date_format"])
             if article.published
             else labels["unknown_date"]
         )
