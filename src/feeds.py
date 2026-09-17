@@ -5,8 +5,21 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 import feedparser
+import requests
 
 logger = logging.getLogger(__name__)
+
+# feedparser's eigener Fetcher schickt einen sehr bot-typischen Default-
+# User-Agent mit - Google News (u.a.) beantwortet das von manchen Hosting-IPs
+# aus mit einer HTML-Blockseite statt echtem RSS, was dann als malformed XML
+# auffaellt. Deshalb selbst per requests mit Browser-UA abrufen.
+_REQUEST_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
+}
 
 
 @dataclass
@@ -33,7 +46,14 @@ def _entry_datetime(entry) -> datetime | None:
 
 
 def fetch_articles(feed_url: str) -> list[Article]:
-    parsed = feedparser.parse(feed_url)
+    try:
+        resp = requests.get(feed_url, headers=_REQUEST_HEADERS, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        logger.warning("Feed konnte nicht abgerufen werden: %s (%s)", feed_url, exc)
+        return []
+
+    parsed = feedparser.parse(resp.content)
 
     if parsed.bozo and not parsed.entries:
         logger.warning("Feed konnte nicht gelesen werden: %s (%s)", feed_url, parsed.bozo_exception)

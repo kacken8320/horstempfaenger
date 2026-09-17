@@ -12,7 +12,7 @@ initial_backfill: false
 # Nur relevant wenn initial_backfill: false. Postet beim allerersten Lauf
 # eines Outlets trotzdem die N neuesten Artikel (statt nur stumm zu markieren)
 # - praktisch zum Testen, ob der Discord-Post wirklich ankommt. 0 = aus.
-initial_backfill_sample: 0
+initial_backfill_sample: 1
 
 # Zeichenlimit für den Content/Summary-Teil der Discord-Nachricht.
 content_max_chars: 500
