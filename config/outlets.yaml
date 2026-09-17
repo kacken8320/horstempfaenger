@@ -36,8 +36,14 @@ outlets:
     ausrichtung:
       de: "Nachrichtenagentur, sachlich/neutral"
       en: "Wire service, factual/neutral"
-    feed_url: null
-    active: false
+    # Wie Reuters: kein offizieller RSS-Feed mehr, apnews.com selbst laesst sich
+    # nicht sauber scrapen -> Google News RSS gescoped auf site:apnews.com.
+    # Liefert echte AP-Artikel (Quelle "AP News"), aber keinen echten Body.
+    feed_url: "https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en"
+    source_type: google_news
+    feed_language: en
+    google_news_source: "AP News"
+    active: true
 
   - name: Kyodo
     tier: T1
@@ -62,6 +68,11 @@ outlets:
     ausrichtung:
       de: "Nachrichtenagentur, sachlich/neutral"
       en: "Wire service, factual/neutral"
+    # Recherchiert, aber (noch) kein Feed: dpa ist reines B2B-Wire-Geschaeft ohne
+    # eigene oeffentliche Newsseite. Google News fuer "dpa" liefert nur Treffer
+    # bei Drittseiten (SZ.de, Lokalportale, ...), die dpa-Meldungen selbst
+    # redigiert weiterverbreiten - kein sauberer "das ist wirklich dpa"-Filter
+    # moeglich wie bei Reuters/AP/AFP ueber site:/<source>. Bleibt inaktiv.
     feed_url: null
     active: false
 
@@ -73,8 +84,17 @@ outlets:
     ausrichtung:
       de: "Nachrichtenagentur, sachlich/neutral"
       en: "Wire service, factual/neutral"
-    feed_url: null
-    active: false
+    # afp.com selbst ist eine SPA und die einzige oeffentliche RSS-Route dort
+    # (/en/actus/.../feed) liefert nur "Inside AFP"-PR, keine echten Artikel.
+    # Google News fuer "AFP" (ohne site:-Scope, sonst mischt afp.com auch sein
+    # eigenes bezahltes Presseportal unter) trifft echte AFP-Artikel mit
+    # Quelle "afp.com" - Fehltreffer wie "Americans for Prosperity" werden
+    # über google_news_source rausgefiltert.
+    feed_url: "https://news.google.com/rss/search?q=%22AFP%22+when:1d&hl=en-US&gl=US&ceid=US:en"
+    source_type: google_news
+    feed_language: en
+    google_news_source: "afp.com"
+    active: true
 
   # --- Tier 2 ---
   - name: Jiji

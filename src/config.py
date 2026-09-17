@@ -22,6 +22,7 @@ class Outlet:
     active: bool
     source_type: str = "official"
     feed_language: str | None = None
+    google_news_source: str | None = None
 
     def country_for(self, language: str) -> str:
         return self.country.get(language, self.country["en"])
@@ -56,6 +57,7 @@ def load_outlets(path: Path = CONFIG_DIR / "outlets.yaml") -> list[Outlet]:
                 active=bool(entry.get("active", False)) and bool(entry.get("feed_url")),
                 source_type=entry.get("source_type", "official"),
                 feed_language=entry.get("feed_language"),
+                google_news_source=entry.get("google_news_source"),
             )
         )
 

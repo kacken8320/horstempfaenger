@@ -36,11 +36,20 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
             continue
 
         if outlet.source_type == "google_news":
-            # Google News haengt " - <Outlet>" an den Titel an und liefert keinen
-            # echten Artikel-Body, nur Titel+Quellen-Badge als "description".
+            # Google News liefert keinen echten Artikel-Body (nur Titel+Quellen-
+            # Badge als "description") und mischt bei Textsuchen auch Treffer
+            # anderer Quellen unter (z.B. "AFP" matcht auch "Americans for
+            # Prosperity"). Nur Artikel behalten, deren <source> exakt zur
+            # erwarteten Quelle passt, dann den " - <Quelle>"-Titelsuffix strippen.
+            expected_source = (outlet.google_news_source or outlet.name).lower()
+            matched = []
             for article in articles:
-                article.title = strip_source_suffix(article.title, outlet.name)
+                if (article.source_title or "").lower() != expected_source:
+                    continue
+                article.title = strip_source_suffix(article.title, article.source_title)
                 article.summary = ""
+                matched.append(article)
+            articles = matched
 
         first_run = not state.has_any(outlet.name)
         sample_keys = set()

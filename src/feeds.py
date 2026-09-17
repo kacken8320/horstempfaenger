@@ -17,6 +17,7 @@ class Article:
     author: str
     published: datetime | None
     summary: str
+    source_title: str | None = None
 
 
 def _entry_key(entry) -> str:
@@ -51,6 +52,7 @@ def fetch_articles(feed_url: str) -> list[Article]:
                 author=entry.get("author", "unbekannt").strip(),
                 published=_entry_datetime(entry),
                 summary=(entry.get("summary") or "").strip(),
+                source_title=entry.get("source", {}).get("title"),
             )
         )
     return articles

@@ -21,9 +21,9 @@ def truncate(text: str, max_chars: int) -> str:
     return text[: max_chars - 1].rstrip() + "…"
 
 
-def strip_source_suffix(title: str, outlet_name: str) -> str:
-    """Google News haengt an Titel ' - <Outlet>' an - das entfernen wir wieder."""
-    suffix = f" - {outlet_name}"
+def strip_source_suffix(title: str, source_name: str) -> str:
+    """Google News haengt an Titel ' - <Quelle>' an - das entfernen wir wieder."""
+    suffix = f" - {source_name}"
     if title.endswith(suffix):
         return title[: -len(suffix)].rstrip()
     return title
