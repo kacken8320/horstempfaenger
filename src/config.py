@@ -20,6 +20,7 @@ class Outlet:
     ausrichtung: dict[str, str]
     feed_url: str | None
     active: bool
+    flag: str = ""
     source_type: str = "official"
     feed_language: str | None = None
     google_news_source: str | None = None
@@ -55,6 +56,7 @@ def load_outlets(path: Path = CONFIG_DIR / "outlets.yaml") -> list[Outlet]:
                 ausrichtung=entry["ausrichtung"],
                 feed_url=entry.get("feed_url"),
                 active=bool(entry.get("active", False)) and bool(entry.get("feed_url")),
+                flag=entry.get("flag", ""),
                 source_type=entry.get("source_type", "official"),
                 feed_language=entry.get("feed_language"),
                 google_news_source=entry.get("google_news_source"),

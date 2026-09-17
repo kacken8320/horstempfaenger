@@ -21,12 +21,6 @@ DEFAULT_COLOR = 0x2C3E50
 
 LABELS = {
     "de": {
-        "tier": "Tier",
-        "outlet": "Outlet",
-        "country": "Land",
-        "ausrichtung": "Grobe Ausrichtung",
-        "author": "Autor",
-        "date": "Datum",
         "no_summary": "(keine Zusammenfassung verfügbar)",
         "unknown_author": "unbekannt",
         "unknown_date": "unbekannt",
@@ -34,12 +28,6 @@ LABELS = {
         "date_format": "%d.%m.%Y %H:%M UTC",
     },
     "en": {
-        "tier": "Tier",
-        "outlet": "Outlet",
-        "country": "Country",
-        "ausrichtung": "Rough Orientation",
-        "author": "Author",
-        "date": "Date",
         "no_summary": "(no summary available)",
         "unknown_author": "unknown",
         "unknown_date": "unknown",
@@ -70,28 +58,23 @@ class DiscordPoster:
             else labels["unknown_date"]
         )
         summary = truncate(strip_html(article.summary), content_max_chars) or labels["no_summary"]
+        author = article.author or labels["unknown_author"]
+        outlet_line = f"{outlet.flag} {outlet.name}".strip()
 
-        # Metadaten als Tab-ausgerichtete Zeilen untereinander statt als separate
-        # Discord-Felder - Titel ist per embed.url schon klickbar, kein Link-Feld noetig.
-        metadata = "\n".join(
+        header = "\n".join(
             [
-                f"{labels['tier']}:\t{outlet.tier}",
-                f"{labels['outlet']}:\t{outlet.name}",
-                f"{labels['country']}:\t{outlet.country_for(language)}",
-                f"{labels['ausrichtung']}:\t{outlet.ausrichtung_for(language)}",
-                f"{labels['author']}:\t{article.author or labels['unknown_author']}",
-                f"{labels['date']}:\t{date_str}",
+                outlet.tier,
+                outlet_line,
+                f"({outlet.ausrichtung_for(language)})",
+                f"{date_str} - {author}",
             ]
         )
 
         embed = {
             "title": truncate(article.title, 256) or labels["no_title"],
             "url": article.link or None,
-            "description": summary,
+            "description": f"{header}\n\n{summary}",
             "color": TIER_COLORS.get(outlet.tier, DEFAULT_COLOR),
-            "fields": [
-                {"name": "​", "value": f"```\n{metadata}\n```", "inline": False},
-            ],
         }
 
         payload = {"embeds": [embed]}

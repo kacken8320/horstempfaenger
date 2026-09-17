@@ -12,6 +12,7 @@ outlets:
   # --- Tier 1: geopolitisch relevanteste Agenturen ---
   - name: Reuters
     tier: T1
+    flag: "🇬🇧"
     country:
       de: Vereinigtes Königreich
       en: United Kingdom
@@ -30,6 +31,7 @@ outlets:
 
   - name: AP
     tier: T1
+    flag: "🇺🇸"
     country:
       de: USA
       en: USA
@@ -47,6 +49,7 @@ outlets:
 
   - name: Kyodo
     tier: T1
+    flag: "🇯🇵"
     country:
       de: Japan
       en: Japan
@@ -62,6 +65,7 @@ outlets:
 
   - name: dpa
     tier: T1
+    flag: "🇩🇪"
     country:
       de: Deutschland
       en: Germany
@@ -78,6 +82,7 @@ outlets:
 
   - name: AFP
     tier: T1
+    flag: "🇫🇷"
     country:
       de: Frankreich
       en: France
@@ -99,6 +104,7 @@ outlets:
   # --- Tier 2 ---
   - name: Jiji
     tier: T2
+    flag: "🇯🇵"
     country:
       de: Japan
       en: Japan
@@ -110,6 +116,7 @@ outlets:
 
   - name: Antara
     tier: T2
+    flag: "🇮🇩"
     country:
       de: Indonesien
       en: Indonesia
@@ -121,6 +128,7 @@ outlets:
 
   - name: PA Media
     tier: T2
+    flag: "🇬🇧"
     country:
       de: Vereinigtes Königreich
       en: United Kingdom
@@ -132,6 +140,7 @@ outlets:
 
   - name: EFE
     tier: T2
+    flag: "🇪🇸"
     country:
       de: Spanien
       en: Spain
@@ -143,6 +152,7 @@ outlets:
 
   - name: SDA
     tier: T2
+    flag: "🇨🇭"
     country:
       de: Schweiz
       en: Switzerland
