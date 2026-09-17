@@ -1,0 +1,17 @@
+# Globale Einstellungen für den RSS-Scraper.
+
+# Wie oft (in Sekunden) alle aktiven Feeds neu gepollt werden.
+poll_interval_seconds: 300
+
+# Beim allerersten Lauf eines Outlets: falls true, werden bereits vorhandene
+# Feed-Einträge sofort gepostet (kann zu einem Schwall alter Artikel führen).
+# Bei false werden bestehende Einträge nur als "gesehen" markiert, gepostet
+# wird erst, was ab jetzt neu im Feed auftaucht.
+initial_backfill: false
+
+# Zeichenlimit für den Content/Summary-Teil der Discord-Nachricht.
+content_max_chars: 500
+
+# Minimale Pause zwischen zwei Discord-Webhook-Posts (Sekunden), um das
+# Rate-Limit (~5 Requests/2s pro Webhook) nicht zu reißen.
+discord_min_interval_seconds: 1.0

@@ -1,0 +1,105 @@
+deployment: railway.app (kostenloses trial-guthaben)
+========================================================
+
+ziel: dieses repo per railway deployen, ohne kreditkarte beim signup.
+railway nutzt KEIN docker-compose.yml - es baut direkt aus dem
+Dockerfile und verwaltet variablen/volumes ueber sein eigenes dashboard.
+
+wichtig: das ist ein einmaliges 5$-trial-guthaben, kein dauerhaft
+kostenloser tarif. verbrauch fuer so ein leichtes script liegt bei ca.
+0,30-0,50 $/monat, das guthaben reicht also realistisch mehrere monate.
+railway zeigt im dashboard den verbleibenden kontostand an. wenn er
+aufgebraucht ist, pausiert der service, bis eine zahlungsmethode
+hinterlegt wird.
+
+
+1. repo auf github
+---------------------
+
+railway deployt standardmaessig aus einem github-repo. falls das repo
+hier noch nicht auf github liegt:
+
+    gh repo create horstempfaenger --private --source=. --push
+
+(oder ganz normal per "git remote add" + "git push", wenn das repo
+schon existiert. privates repo ist kein problem, railway braucht dafuer
+nur eine github-berechtigung, keine kreditkarte)
+
+
+2. railway account
+----------------------
+
+- auf https://railway.app registrieren, am einfachsten per
+  "Login with GitHub" - keine kreditkarte noetig fuer den trial
+- railway fragt beim ersten projekt nach der github-app-berechtigung
+  fuer das repo (oder alle repos, je nachdem was man erlaubt)
+
+
+3. projekt erstellen
+------------------------
+
+- "New Project" -> "Deploy from GitHub repo"
+- das horstempfaenger-repo auswaehlen
+- railway erkennt das Dockerfile automatisch und baut daraus das image
+  (docker-compose.yml wird ignoriert, braucht man hier nicht)
+
+
+4. webhook-url als variable setzen
+--------------------------------------
+
+im projekt -> service auswaehlen -> tab "Variables":
+
+    DISCORD_WEBHOOK_URL = <echte webhook-url>
+
+railway injiziert das direkt als environment-variable in den
+container-prozess - dafuer braucht es keine .env-datei im image, unser
+config.py liest das ueber os.environ sowieso zuerst.
+
+
+5. persistenten speicher einrichten
+---------------------------------------
+
+ohne das wuerde die dedup-datenbank (data/state.db) bei jedem neustart
+verloren gehen und alte artikel erneut posten.
+
+- service -> tab "Settings" -> Abschnitt "Volumes" -> "Add Volume"
+- mount path: /app/data
+- danach bleibt state.db ueber neustarts/redeploys hinweg erhalten
+
+
+6. deploy
+-----------
+
+passiert automatisch, sobald schritt 3 abgeschlossen ist. railway
+started den container direkt mit dem CMD aus dem Dockerfile
+("python -m src.main").
+
+ab jetzt: jeder "git push" auf den verbundenen branch loest
+automatisch einen neuen build + deploy aus (continuous deployment).
+
+
+7. logs / kontrollieren
+---------------------------
+
+service -> tab "Deployments" -> aktuelles deployment -> "View Logs"
+
+dort siehst du live genau das debug-output, das wir eingebaut haben:
+
+    INFO main: Aktive Outlets: Reuters
+    INFO main: Zyklus startet fuer: Reuters
+    INFO main: Reuters: 100 Artikel im Feed, 3 neu gepostet, ...
+
+
+8. outlets/config aendern
+-----------------------------
+
+config/outlets.yaml lokal editieren (feed_url eintragen, active: true
+setzen), committen, pushen - railway baut automatisch neu und deployt.
+kein manueller schritt auf railway noetig.
+
+
+9. guthaben im blick behalten
+---------------------------------
+
+dashboard -> account/usage zeigt den verbleibenden kontostand. bei so
+einem leichten script sollte das trial-guthaben mehrere monate reichen.

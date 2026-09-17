@@ -1,0 +1,129 @@
+# Konfiguration der Nachrichtenagenturen/Outlets.
+#
+# feed_url: null solange kein Feed recherchiert wurde -> Outlet wird im Loop übersprungen.
+# country/ausrichtung: jeweils als {de: ..., en: ...} hinterlegt, da die Discord-
+#   Nachricht komplett in der Sprache des jeweiligen Artikels gepostet wird.
+# ausrichtung: grobe redaktionelle Einordnung. Bei Nachrichtenagenturen i.d.R. "Wire
+#   Service, sachlich/neutral" als Startwert - bei staatsnahen Agenturen ist das mit
+#   Vorsicht zu lesen (z.B. Eigentümerstruktur), daher hier bewusst nicht weiter
+#   politisch bewertet. Bitte bei Bedarf manuell anpassen/verfeinern.
+
+outlets:
+  # --- Tier 1: geopolitisch relevanteste Agenturen ---
+  - name: Reuters
+    tier: T1
+    country:
+      de: Vereinigtes Königreich
+      en: United Kingdom
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    # Reuters hat keinen offiziellen RSS-Feed mehr (feeds.reuters.com ist tot) und
+    # reuters.com ist per DataDome gegen Bots geschuetzt -> Workaround ueber
+    # Google News RSS, gescoped auf site:reuters.com. Achtung: laut Google-ToS nur
+    # fuer "personal, non-commercial use" vorgesehen; bewusst akzeptierter Kompromiss.
+    # Liefert keinen echten Artikel-Body (nur Titel), siehe source_type-Handling.
+    feed_url: "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en"
+    source_type: google_news
+    feed_language: en
+    active: true
+
+  - name: AP
+    tier: T1
+    country:
+      de: USA
+      en: USA
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: Kyodo
+    tier: T1
+    country:
+      de: Japan
+      en: Japan
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: dpa
+    tier: T1
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: AFP
+    tier: T1
+    country:
+      de: Frankreich
+      en: France
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: null
+    active: false
+
+  # --- Tier 2 ---
+  - name: Jiji
+    tier: T2
+    country:
+      de: Japan
+      en: Japan
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: Antara
+    tier: T2
+    country:
+      de: Indonesien
+      en: Indonesia
+    ausrichtung:
+      de: "Nachrichtenagentur, staatlich (Indonesien), sachlich/neutral"
+      en: "Wire service, state-owned (Indonesia), factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: PA Media
+    tier: T2
+    country:
+      de: Vereinigtes Königreich
+      en: United Kingdom
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: EFE
+    tier: T2
+    country:
+      de: Spanien
+      en: Spain
+    ausrichtung:
+      de: "Nachrichtenagentur, mehrheitlich staatlich (Spanien), sachlich/neutral"
+      en: "Wire service, majority state-owned (Spain), factual/neutral"
+    feed_url: null
+    active: false
+
+  - name: SDA
+    tier: T2
+    country:
+      de: Schweiz
+      en: Switzerland
+    ausrichtung:
+      de: "Nachrichtenagentur, Genossenschaft, sachlich/neutral"
+      en: "Wire service, cooperative, factual/neutral"
+    feed_url: null
+    active: false
