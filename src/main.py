@@ -43,8 +43,15 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 article.summary = ""
 
         first_run = not state.has_any(outlet.name)
+        sample_keys = set()
         if first_run and not settings.initial_backfill:
-            logger.info("Erster Lauf für %s: markiere %d bestehende Artikel als gesehen (kein Post).", outlet.name, len(articles))
+            if settings.initial_backfill_sample > 0:
+                newest_first = sorted(articles, key=lambda a: a.published or EPOCH, reverse=True)
+                sample_keys = {a.key for a in newest_first[: settings.initial_backfill_sample]}
+            logger.info(
+                "Erster Lauf für %s: markiere %d bestehende Artikel als gesehen (%d als Test gepostet).",
+                outlet.name, len(articles), len(sample_keys),
+            )
 
         posted_count = 0
         skipped_language_count = 0
@@ -55,7 +62,7 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 already_known_count += 1
                 continue
 
-            if first_run and not settings.initial_backfill:
+            if first_run and not settings.initial_backfill and article.key not in sample_keys:
                 state.mark_seen(outlet.name, article.key, posted=False)
                 continue
 
