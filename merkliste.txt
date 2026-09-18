@@ -1,0 +1,5 @@
+dpa interessant:
+    - t-online
+    - handelsblatt
+    - eGovernment
+    - merkur
