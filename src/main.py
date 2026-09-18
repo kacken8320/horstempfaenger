@@ -117,7 +117,10 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 continue
 
             if first_run and not settings.initial_backfill and article.key not in sample_keys:
-                state.mark_seen(outlet.name, article.key, posted=False)
+                state.mark_seen(
+                    outlet.name, article.key, posted=False,
+                    title=article.title, link=article.link, tier=outlet.tier,
+                )
                 continue
 
             if article.published is None or abs(now - article.published) > MAX_ARTICLE_AGE:
@@ -125,7 +128,10 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                     "Übersprungen (nicht innerhalb der letzten %d Min., Datum: %s): %s",
                     MAX_ARTICLE_AGE.seconds // 60, article.published, article.title,
                 )
-                state.mark_seen(outlet.name, article.key, posted=False)
+                state.mark_seen(
+                    outlet.name, article.key, posted=False,
+                    title=article.title, link=article.link, tier=outlet.tier,
+                )
                 stats["skipped_stale"] += 1
                 continue
 
@@ -139,7 +145,10 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
 
             if language not in ALLOWED_LANGUAGES:
                 logger.info("Übersprungen (Sprache '%s'): %s", language, article.title)
-                state.mark_seen(outlet.name, article.key, posted=False)
+                state.mark_seen(
+                    outlet.name, article.key, posted=False,
+                    title=article.title, link=article.link, tier=outlet.tier,
+                )
                 stats["skipped_language"] += 1
                 continue
 
@@ -147,7 +156,10 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 # Teuerster Check zuletzt: laedt die volle Artikelseite, daher
                 # nur noch fuer Artikel ausfuehren, die sonst eh gepostet wuerden.
                 logger.info("Übersprungen (Quelle nicht ausschließlich dpa): %s", article.title)
-                state.mark_seen(outlet.name, article.key, posted=False)
+                state.mark_seen(
+                    outlet.name, article.key, posted=False,
+                    title=article.title, link=article.link, tier=outlet.tier,
+                )
                 stats["skipped_not_dpa"] = stats.get("skipped_not_dpa", 0) + 1
                 continue
 
@@ -165,12 +177,18 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
             ", ".join(f"[{o.tier}] {o.name}: {a.title}" for o, a, _ in dropped),
         )
     for outlet, article, _ in dropped:
-        state.mark_seen(outlet.name, article.key, posted=False)
+        state.mark_seen(
+            outlet.name, article.key, posted=False,
+            title=article.title, link=article.link, tier=outlet.tier,
+        )
         outlet_stats[outlet.name]["dropped_cap"] = outlet_stats[outlet.name].get("dropped_cap", 0) + 1
 
     for outlet, article, language in selected:
         posted = poster.post_article(outlet, article, settings.content_max_chars, language)
-        state.mark_seen(outlet.name, article.key, posted=posted)
+        state.mark_seen(
+            outlet.name, article.key, posted=posted,
+            title=article.title, link=article.link, tier=outlet.tier,
+        )
         if posted:
             stats = outlet_stats[outlet.name]
             stats["posted"] = stats.get("posted", 0) + 1
