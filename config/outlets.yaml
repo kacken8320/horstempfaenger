@@ -133,6 +133,18 @@ outlets:
     feed_url: "https://pa.media/feed/"
     active: true
 
+  - name: Yonhap
+    tier: "Tier 2"
+    flag: "🇰🇷"
+    country:
+      de: Südkorea
+      en: South Korea
+    ausrichtung:
+      de: "Nachrichtenagentur, quasi-staatlich (Südkorea), sachlich/neutral"
+      en: "Wire service, quasi state-affiliated (South Korea), factual/neutral"
+    feed_url: "https://en.yna.co.kr/RSS/news.xml"
+    active: true
+
   - name: EFE
     tier: "Tier 2"
     flag: "🇪🇸"
@@ -555,18 +567,6 @@ outlets:
       de: "englischsprachige Tageszeitung, liberal, taiwan-zentrierte Perspektive"
       en: "English-language daily newspaper, liberal, Taiwan-centric perspective"
     feed_url: "https://www.taipeitimes.com/xml/index.rss"
-    active: true
-
-  - name: Yonhap
-    tier: "Tier 4"
-    flag: "🇰🇷"
-    country:
-      de: Südkorea
-      en: South Korea
-    ausrichtung:
-      de: "Nachrichtenagentur, quasi-staatlich (Südkorea), sachlich/neutral"
-      en: "Wire service, quasi state-affiliated (South Korea), factual/neutral"
-    feed_url: "https://en.yna.co.kr/RSS/news.xml"
     active: true
 
   - name: Korea Herald
