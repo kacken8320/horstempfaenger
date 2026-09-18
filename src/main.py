@@ -8,7 +8,7 @@ from src.config import DATA_DIR, Outlet, load_outlets, load_settings
 from src.discord import DiscordPoster
 from src.feeds import Article, fetch_articles
 from src.lang import ALLOWED_LANGUAGES, detect_language
-from src.sources import load_sources
+from src.sources import CUSTOM_FETCHERS
 from src.sources.base import Source
 from src.state import StateStore
 from src.textutils import clean_author, strip_html, strip_source_suffix
@@ -61,19 +61,22 @@ def _select_candidates(candidates: list[tuple]) -> tuple[list[tuple], list[tuple
 
 
 def _source_from_outlet(outlet: Outlet) -> Source:
-    """Adapter fuer noch nicht auf ein eigenes Modul migrierte Outlets aus
-    config/outlets.yaml - fetch() repliziert die bisherige generische
-    RSS-/Google-News-Logik. Wird Stueck fuer Stueck ueberfluessig, sobald
-    jeder Outlet sein eigenes src/sources/<name>.py bekommt."""
+    """Baut aus einem YAML-Outlet eine Source. Eigenschaften (Name/Tier/Flag/
+    Ausrichtung/feed_url/active) kommen komplett aus der YAML - die zentrale
+    Uebersicht fuer Menschen. fetch() kommt entweder generisch (official/
+    google_news) oder, bei source_type mit eigener Sonderlogik (z.B.
+    t_online_dpa), aus der CUSTOM_FETCHERS-Registry in src/sources/."""
+    custom_factory = CUSTOM_FETCHERS.get(outlet.source_type)
+    if custom_factory:
+        fetch = custom_factory(outlet.feed_url)
+    elif outlet.source_type == "google_news":
+        def fetch(since: datetime) -> list[Article]:
+            try:
+                articles = fetch_articles(outlet.feed_url)
+            except Exception:
+                logger.exception("Fehler beim Abrufen von %s", outlet.name)
+                return []
 
-    def fetch(since: datetime) -> list[Article]:
-        try:
-            articles = fetch_articles(outlet.feed_url)
-        except Exception:
-            logger.exception("Fehler beim Abrufen von %s", outlet.name)
-            return []
-
-        if outlet.source_type == "google_news":
             # Google News liefert keinen echten Artikel-Body (nur Titel+Quellen-
             # Badge als "description") und mischt bei Textsuchen auch Treffer
             # anderer Quellen unter (z.B. "AFP" matcht auch "Americans for
@@ -87,9 +90,14 @@ def _source_from_outlet(outlet: Outlet) -> Source:
                 article.title = strip_source_suffix(article.title, article.source_title)
                 article.summary = ""
                 matched.append(article)
-            articles = matched
-
-        return articles
+            return matched
+    else:
+        def fetch(since: datetime) -> list[Article]:
+            try:
+                return fetch_articles(outlet.feed_url)
+            except Exception:
+                logger.exception("Fehler beim Abrufen von %s", outlet.name)
+                return []
 
     return Source(
         name=outlet.name,
@@ -103,8 +111,7 @@ def _source_from_outlet(outlet: Outlet) -> Source:
 
 
 def load_all_sources() -> list[Source]:
-    legacy = [_source_from_outlet(o) for o in load_outlets() if o.active]
-    return legacy + load_sources()
+    return [_source_from_outlet(o) for o in load_outlets() if o.active]
 
 
 def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, settings) -> None:

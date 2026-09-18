@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from src.sources.base import Source
-from src.sources.tonline import SOURCES as _TONLINE_SOURCES
+from datetime import datetime
+from typing import Callable
 
-# Explizite Registry statt Auto-Discovery - bei einer Handvoll Outlets simpler
-# und expliziter als pkgutil-Scanning. Neues Outlet-Modul -> hier eintragen.
-_ALL_SOURCES: list[Source] = [
-    *_TONLINE_SOURCES,
-]
+from src.feeds import Article
+from src.sources import tonline
 
-
-def load_sources() -> list[Source]:
-    return list(_ALL_SOURCES)
+# Registry fuer source_type-Werte, die eigene (nicht-generische) Fetch-Logik
+# brauchen - Wert ist eine Factory, die die feed_url aus der YAML entgegennimmt
+# und eine fetch(since)-Funktion zurueckgibt. Neues Outlet mit Sonderlogik
+# (z.B. spaeter Scraping) -> eigenes Modul hier + Eintrag in dieser Registry,
+# Eigenschaften (Name/Tier/Flag/Ausrichtung/feed_url/active) bleiben in der
+# YAML - siehe main.py:_source_from_outlet.
+CUSTOM_FETCHERS: dict[str, Callable[[str], Callable[[datetime], list[Article]]]] = {
+    "t_online_dpa": tonline.make_fetch,
+}
