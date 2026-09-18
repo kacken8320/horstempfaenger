@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # User-Agent mit - Google News (u.a.) beantwortet das von manchen Hosting-IPs
 # aus mit einer HTML-Blockseite statt echtem RSS, was dann als malformed XML
 # auffaellt. Deshalb selbst per requests mit Browser-UA abrufen.
-_REQUEST_HEADERS = {
+REQUEST_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -47,7 +47,7 @@ def _entry_datetime(entry) -> datetime | None:
 
 def fetch_articles(feed_url: str) -> list[Article]:
     try:
-        resp = requests.get(feed_url, headers=_REQUEST_HEADERS, timeout=15)
+        resp = requests.get(feed_url, headers=REQUEST_HEADERS, timeout=15)
         resp.raise_for_status()
     except requests.RequestException as exc:
         logger.warning("Feed konnte nicht abgerufen werden: %s (%s)", feed_url, exc)

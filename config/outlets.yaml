@@ -9,6 +9,52 @@
 #   politisch bewertet. Bitte bei Bedarf manuell anpassen/verfeinern.
 
 outlets:
+  # --- Tier 0: reine dpa-Meldungen via t-online (bestes Tier, kommt immer durch) ---
+  # source_type: t_online_dpa laedt zusaetzlich zum RSS-Eintrag die volle
+  # Artikelseite und behaelt nur Artikel, deren Quelle laut eingebettetem
+  # Page-JSON AUSSCHLIESSLICH dpa/dpa-afx ist (kein Mix mit t-online-Redaktion).
+  # Aufgeteilt auf 3 Themen-Feeds statt des allgemeinen Feeds, damit Sport/
+  # Boulevard/Ratgeber gar nicht erst mit reinkommen - kein extra Themen-/
+  # Laenderfilter (China/Japan/Korea/Indonesien) auf Wunsch vorerst weggelassen.
+  - name: t-online (Politik/Ausland)
+    tier: "Tier 0"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "dpa-Meldung, weitergeleitet via t-online, sachlich/neutral"
+      en: "dpa wire content, relayed via t-online, factual/neutral"
+    feed_url: "https://www.t-online.de/nachrichten/feed.rss"
+    source_type: t_online_dpa
+    active: true
+
+  - name: t-online (Wirtschaft/Finanzen)
+    tier: "Tier 0"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "dpa-Meldung, weitergeleitet via t-online, sachlich/neutral"
+      en: "dpa wire content, relayed via t-online, factual/neutral"
+    feed_url: "https://www.t-online.de/finanzen/feed.rss"
+    source_type: t_online_dpa
+    active: true
+
+  - name: t-online (Digital/Technik)
+    tier: "Tier 0"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "dpa-Meldung, weitergeleitet via t-online, sachlich/neutral"
+      en: "dpa wire content, relayed via t-online, factual/neutral"
+    feed_url: "https://www.t-online.de/digital/feed.rss"
+    source_type: t_online_dpa
+    active: true
+
   # --- Tier 1: geopolitisch relevanteste Agenturen ---
   - name: Reuters
     tier: "Tier 1"

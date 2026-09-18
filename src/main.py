@@ -10,6 +10,7 @@ from src.feeds import fetch_articles
 from src.lang import ALLOWED_LANGUAGES, detect_language
 from src.state import StateStore
 from src.textutils import clean_author, strip_html, strip_source_suffix
+from src.tonline import is_dpa_exclusive
 
 logging.basicConfig(
     level=logging.INFO,
@@ -142,6 +143,14 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 stats["skipped_language"] += 1
                 continue
 
+            if outlet.source_type == "t_online_dpa" and not is_dpa_exclusive(article.link):
+                # Teuerster Check zuletzt: laedt die volle Artikelseite, daher
+                # nur noch fuer Artikel ausfuehren, die sonst eh gepostet wuerden.
+                logger.info("Übersprungen (Quelle nicht ausschließlich dpa): %s", article.title)
+                state.mark_seen(outlet.name, article.key, posted=False)
+                stats["skipped_not_dpa"] = stats.get("skipped_not_dpa", 0) + 1
+                continue
+
             candidates.append((outlet, article, language))
 
     # Cross-Outlet-Auswahl: erst jetzt, nachdem alle Feeds durch sind, wird
@@ -173,9 +182,11 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
             continue
         logger.info(
             "%s: %d Artikel im Feed, %d neu gepostet, %d wegen Cycle-Limit übersprungen, "
-            "%d wegen Sprache übersprungen, %d zu alt/ohne Datum übersprungen, %d schon bekannt.",
+            "%d wegen Sprache übersprungen, %d zu alt/ohne Datum übersprungen, "
+            "%d wegen Quelle übersprungen, %d schon bekannt.",
             outlet.name, stats["total"], stats.get("posted", 0), stats.get("dropped_cap", 0),
-            stats["skipped_language"], stats["skipped_stale"], stats["already_known"],
+            stats["skipped_language"], stats["skipped_stale"], stats.get("skipped_not_dpa", 0),
+            stats["already_known"],
         )
 
 
