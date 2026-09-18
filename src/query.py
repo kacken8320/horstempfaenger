@@ -31,7 +31,7 @@ def _normalize_tier(raw: str) -> str:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("tiers", nargs="+", help="Tiers, z.B. T0 T2 oder 'Tier 0' 'Tier 2'")
-    parser.add_argument("--hours", type=float, default=2.0, help="Zeitfenster in Stunden (default: 2)")
+    parser.add_argument("--hours", type=float, default=24.0, help="Zeitfenster in Stunden (default: 24)")
     args = parser.parse_args(argv)
 
     try:
