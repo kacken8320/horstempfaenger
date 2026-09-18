@@ -146,6 +146,24 @@ outlets:
     feed_language: en
     active: true
 
+  # DWs englischer RSS-Feed liefert pro Item ein sauberes <category>-Feld
+  # direkt mit - kein Scraping noetig. source_type: dw_category_filter behaelt
+  # nur News/World/Germany/Business/Science, wirft Sports/Culture/Environment/
+  # Climate raus (siehe src/sources/dw.py).
+  - name: Deutsche Welle
+    tier: "Tier 1"
+    flag: "🇩🇪"
+    country:
+      de: Deutschland
+      en: Germany
+    ausrichtung:
+      de: "staatlich finanzierter Auslandsrundfunk, sachlich/neutral (analog BBC/NHK)"
+      en: "state-funded international broadcaster, factual/neutral (analogous to BBC/NHK)"
+    feed_url: "https://rss.dw.com/xml/rss-en-all"
+    source_type: dw_category_filter
+    feed_language: en
+    active: true
+
   # --- Tier 2 ---
   # - name: Jiji
   #   tier: "Tier 2"
@@ -328,17 +346,8 @@ outlets:
   #   feed_url: "https://www.deutschlandfunk.de/politikportal-100.rss"
   #   active: true
 
-  # - name: DW
-  #   tier: "Tier 3"
-  #   flag: "🇩🇪"
-  #   country:
-  #     de: Deutschland
-  #     en: Germany
-  #   ausrichtung:
-  #     de: "staatlich finanzierter Auslandsrundfunk, sachlich/neutral (analog BBC/NHK)"
-  #     en: "state-funded international broadcaster, factual/neutral (analogous to BBC/NHK)"
-  #   feed_url: "https://rss.dw.com/xml/rss-de-all"
-  #   active: true
+  # (nach Tier 1 verschoben, siehe oben - Eintrag hier bewusst entfernt statt
+  # dupliziert)
 
   # - name: Die Welt
   #   tier: "Tier 3"

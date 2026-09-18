@@ -31,6 +31,7 @@ class Article:
     published: datetime | None
     summary: str
     source_title: str | None = None
+    category: str | None = None
 
 
 def _entry_key(entry) -> str:
@@ -73,6 +74,10 @@ def fetch_articles(feed_url: str) -> list[Article]:
                 published=_entry_datetime(entry),
                 summary=(entry.get("summary") or "").strip(),
                 source_title=entry.get("source", {}).get("title"),
+                # <category> aus dem RSS-Item, falls vorhanden (z.B. DW: "News",
+                # "Sports", "Business") - manche Feeds liefern das direkt mit,
+                # spart uns fuer diese Outlets das Scraping fuer Themen-Filter.
+                category=(entry.get("tags") or [{}])[0].get("term"),
             )
         )
     return articles
