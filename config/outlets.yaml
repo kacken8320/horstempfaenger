@@ -61,9 +61,22 @@ outlets:
     source_type: t_online_dpa
     active: true
 
-  # --- Tier 1: geopolitisch relevanteste Agenturen ---
+  # --- Tier 0: Reuters, thematisch gefiltert auf Politik/Geopolitik/Krieg/
+  # Wirtschaft/Finanzen/Tech (bestes Tier, kommt immer durch) ---
+  # Reuters hat keinen offiziellen RSS-Feed mehr (feeds.reuters.com ist tot) und
+  # reuters.com blockt jeden automatisierten Zugriff per DataDome (401 +
+  # CAPTCHA-Challenge); ihre robots.txt untersagt zudem explizit automatisierte
+  # Inhalte-Sammlung ohne schriftliche Erlaubnis -> reuters.com wird bewusst
+  # NICHT direkt angefragt (kein Bot-Detection-Bypass). Workaround ueber Google
+  # News RSS (site:reuters.com), Google-ToS erlaubt das fuer "personal,
+  # non-commercial use". source_type: reuters_google_news decodiert zusaetzlich
+  # Googles eigenen (nicht bot-geschuetzten) Redirect-Mechanismus, um an die
+  # echte reuters.com-URL zu kommen, und filtert per Kategorie aus deren
+  # URL-Pfad (world/business/markets/technology - explizit kein sports/
+  # lifestyle/breakingviews). Liefert weiterhin keinen echten Artikel-Body (der
+  # kommt nur von reuters.com selbst) - siehe src/sources/reuters.py.
   - name: Reuters
-    tier: "Tier 1"
+    tier: "Tier 0"
     flag: "🇬🇧"
     country:
       de: Vereinigtes Königreich
@@ -71,16 +84,12 @@ outlets:
     ausrichtung:
       de: "Nachrichtenagentur, sachlich/neutral"
       en: "Wire service, factual/neutral"
-    # Reuters hat keinen offiziellen RSS-Feed mehr (feeds.reuters.com ist tot) und
-    # reuters.com ist per DataDome gegen Bots geschuetzt -> Workaround ueber
-    # Google News RSS, gescoped auf site:reuters.com. Achtung: laut Google-ToS nur
-    # fuer "personal, non-commercial use" vorgesehen; bewusst akzeptierter Kompromiss.
-    # Liefert keinen echten Artikel-Body (nur Titel), siehe source_type-Handling.
     feed_url: "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en"
-    source_type: google_news
+    source_type: reuters_google_news
     feed_language: en
     active: true
 
+  # --- Tier 1: geopolitisch relevanteste Agenturen ---
   - name: Kyodo
     tier: "Tier 1"
     flag: "🇯🇵"
