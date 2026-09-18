@@ -6,8 +6,8 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from src.config import Outlet
 from src.feeds import Article
+from src.sources.base import Source
 from src.textutils import parenthesize_first_clause, strip_html, truncate
 
 logger = logging.getLogger(__name__)
@@ -68,9 +68,9 @@ class DiscordPoster:
         if wait > 0:
             time.sleep(wait)
 
-    def post_article(self, outlet: Outlet, article: Article, content_max_chars: int, language: str) -> bool:
+    def post_article(self, source: Source, article: Article, content_max_chars: int, language: str) -> bool:
         labels = LABELS.get(language, LABELS["en"])
-        tier_description = TIER_DESCRIPTIONS.get(language, TIER_DESCRIPTIONS["en"]).get(outlet.tier, "")
+        tier_description = TIER_DESCRIPTIONS.get(language, TIER_DESCRIPTIONS["en"]).get(source.tier, "")
 
         date_str = (
             article.published.astimezone(DISPLAY_TZ).strftime(labels["date_format"])
@@ -86,8 +86,8 @@ class DiscordPoster:
 
         header = "\n".join(
             [
-                f"{outlet.tier} ({tier_description})",
-                f"{outlet.flag} {outlet.name} {parenthesize_first_clause(outlet.ausrichtung_for(language))}".strip(),
+                f"{source.tier} ({tier_description})",
+                f"{source.flag} {source.name} {parenthesize_first_clause(source.ausrichtung_for(language))}".strip(),
                 date_line,
             ]
         )
@@ -97,7 +97,7 @@ class DiscordPoster:
             "title": truncate(article.title, 256) or labels["no_title"],
             "url": article.link or None,
             "description": description,
-            "color": TIER_COLORS.get(outlet.tier, DEFAULT_COLOR),
+            "color": TIER_COLORS.get(source.tier, DEFAULT_COLOR),
         }
 
         payload = {"embeds": [embed]}

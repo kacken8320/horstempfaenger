@@ -47,7 +47,7 @@ def load_outlets(path: Path = CONFIG_DIR / "outlets.yaml") -> list[Outlet]:
         raw = yaml.safe_load(f) or {}
 
     outlets = []
-    for entry in raw.get("outlets", []):
+    for entry in raw.get("outlets") or []:
         outlets.append(
             Outlet(
                 name=entry["name"],
