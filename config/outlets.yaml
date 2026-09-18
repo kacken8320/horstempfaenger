@@ -123,26 +123,28 @@ outlets:
   #   feed_url: null
   #   active: false
 
-  # - name: AFP
-  #   tier: "Tier 1"
-  #   flag: "🇫🇷"
-  #   country:
-  #     de: Frankreich
-  #     en: France
-  #   ausrichtung:
-  #     de: "Nachrichtenagentur, sachlich/neutral"
-  #     en: "Wire service, factual/neutral"
-  #   # afp.com selbst ist eine SPA und die einzige oeffentliche RSS-Route dort
-  #   # (/en/actus/.../feed) liefert nur "Inside AFP"-PR, keine echten Artikel.
-  #   # Google News fuer "AFP" (ohne site:-Scope, sonst mischt afp.com auch sein
-  #   # eigenes bezahltes Presseportal unter) trifft echte AFP-Artikel mit
-  #   # Quelle "afp.com" - Fehltreffer wie "Americans for Prosperity" werden
-  #   # über google_news_source rausgefiltert.
-  #   feed_url: "https://news.google.com/rss/search?q=%22AFP%22+when:1d&hl=en-US&gl=US&ceid=US:en"
-  #   source_type: google_news
-  #   feed_language: en
-  #   google_news_source: "afp.com"
-  #   active: true
+  # afp.com selbst ist eine SPA und die einzige oeffentliche RSS-Route dort
+  # (/en/actus/.../feed) liefert nur "Inside AFP"-PR, keine echten Artikel.
+  # Google News fuer "AFP" (ohne site:-Scope, sonst mischt afp.com auch sein
+  # eigenes bezahltes Presseportal unter) trifft echte AFP-Artikel mit Quelle
+  # "afp.com". Anders als reuters.com ist afp.com aber NICHT bot-geschuetzt
+  # (kein DataDome, keine Sonderklausel in robots.txt) - source_type:
+  # afp_google_news decodiert den Google-Redirect (src/googlenews.py) und holt
+  # zusaetzlich den echten Artikel-Body von afp.com selbst (src/afp.py) fuer
+  # ein echtes Intro (erste 256 Zeichen), siehe src/sources/afp.py.
+  - name: AFP
+    tier: "Tier 1"
+    flag: "🇫🇷"
+    country:
+      de: Frankreich
+      en: France
+    ausrichtung:
+      de: "Nachrichtenagentur, sachlich/neutral"
+      en: "Wire service, factual/neutral"
+    feed_url: "https://news.google.com/rss/search?q=%22AFP%22+when:1d&hl=en-US&gl=US&ceid=US:en"
+    source_type: afp_google_news
+    feed_language: en
+    active: true
 
   # --- Tier 2 ---
   # - name: Jiji
