@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 DISPLAY_TZ = ZoneInfo("Europe/Berlin")
 
 TIER_COLORS = {
+    "Tier 0": 0xF1C40F,  # gold
     "Tier 1": 0xE67E22,  # orange
     "Tier 2": 0x3498DB,  # blue
     "Tier 3": 0x95A5A6,  # grey
@@ -26,12 +27,14 @@ DEFAULT_COLOR = 0x2C3E50
 
 TIER_DESCRIPTIONS = {
     "de": {
+        "Tier 0": "beste verfügbare Quelle",
         "Tier 1": "sehr verlässliche Quelle",
         "Tier 2": "sehr verlässliche Quelle",
         "Tier 3": "verlässliche Quelle",
         "Tier 4": "my mom told me",
     },
     "en": {
+        "Tier 0": "best available source",
         "Tier 1": "very reliable source",
         "Tier 2": "very reliable source",
         "Tier 3": "reliable source",

@@ -25,6 +25,38 @@ EPOCH = datetime.min.replace(tzinfo=timezone.utc)
 # einen alten Artikel neu einsortiert, oder nach einer Downtime).
 MAX_ARTICLE_AGE = timedelta(minutes=5)
 
+# Max. Anzahl Artikel, die pro Zyklus (ueber alle Outlets zusammen) gepostet
+# werden - Tier 0/1 sind davon ausgenommen und kommen immer durch, zaehlen
+# aber trotzdem gegen das Budget, das den niedrigeren Tiers noch bleibt.
+MAX_POSTS_PER_CYCLE = 5
+TIER_PRIORITY = ["Tier 0", "Tier 1", "Tier 2", "Tier 3", "Tier 4"]
+ALWAYS_POST_TIERS = {"Tier 0", "Tier 1"}
+
+
+def _tier_rank(tier: str) -> int:
+    try:
+        return TIER_PRIORITY.index(tier)
+    except ValueError:
+        return len(TIER_PRIORITY)
+
+
+def _select_candidates(candidates: list[tuple]) -> tuple[list[tuple], list[tuple]]:
+    """candidates: Liste von (outlet, article, language), noch nicht sortiert.
+    Tier 0/1 kommen immer komplett durch (auch ueber MAX_POSTS_PER_CYCLE
+    hinaus), zaehlen aber gegen das Budget fuer die restlichen Tiers - d.h. bei
+    3 Tier-1 + 2 Tier-2 + 5 Tier-3-Kandidaten werden alle 3 Tier-1 und beide
+    Tier-2 gepostet (macht schon 5), die 5 Tier-3 fallen komplett raus."""
+    exempt = [c for c in candidates if c[0].tier in ALWAYS_POST_TIERS]
+    rest = sorted(
+        (c for c in candidates if c[0].tier not in ALWAYS_POST_TIERS),
+        key=lambda c: (_tier_rank(c[0].tier), c[1].published or EPOCH),
+    )
+    budget = max(0, MAX_POSTS_PER_CYCLE - len(exempt))
+    selected = exempt + rest[:budget]
+    dropped = rest[budget:]
+    selected.sort(key=lambda c: (_tier_rank(c[0].tier), c[1].published or EPOCH))
+    return selected, dropped
+
 
 def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> None:
     active_outlets = [o for o in outlets if o.active]
@@ -33,6 +65,10 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
         return
 
     logger.info("Zyklus startet fuer: %s", ", ".join(o.name for o in active_outlets))
+
+    now = datetime.now(timezone.utc)
+    candidates: list[tuple] = []  # (outlet, article, language), Kandidaten fuers Posten
+    outlet_stats: dict[str, dict[str, int]] = {}
 
     for outlet in active_outlets:
         try:
@@ -71,15 +107,12 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                 outlet.name, len(articles), len(sample_keys),
             )
 
-        posted_count = 0
-        skipped_language_count = 0
-        skipped_stale_count = 0
-        already_known_count = 0
-        now = datetime.now(timezone.utc)
+        stats = {"total": len(articles), "already_known": 0, "skipped_language": 0, "skipped_stale": 0}
+        outlet_stats[outlet.name] = stats
 
         for article in sorted(articles, key=lambda a: a.published or EPOCH):
             if state.is_known(outlet.name, article.key):
-                already_known_count += 1
+                stats["already_known"] += 1
                 continue
 
             if first_run and not settings.initial_backfill and article.key not in sample_keys:
@@ -92,7 +125,7 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
                     MAX_ARTICLE_AGE.seconds // 60, article.published, article.title,
                 )
                 state.mark_seen(outlet.name, article.key, posted=False)
-                skipped_stale_count += 1
+                stats["skipped_stale"] += 1
                 continue
 
             if outlet.feed_language:
@@ -106,20 +139,43 @@ def run_cycle(outlets, state: StateStore, poster: DiscordPoster, settings) -> No
             if language not in ALLOWED_LANGUAGES:
                 logger.info("Übersprungen (Sprache '%s'): %s", language, article.title)
                 state.mark_seen(outlet.name, article.key, posted=False)
-                skipped_language_count += 1
+                stats["skipped_language"] += 1
                 continue
 
-            posted = poster.post_article(outlet, article, settings.content_max_chars, language)
-            state.mark_seen(outlet.name, article.key, posted=posted)
-            if posted:
-                posted_count += 1
-                logger.info("Gepostet [%s]: [%s] %s - %s", language, outlet.tier, outlet.name, article.title)
+            candidates.append((outlet, article, language))
 
+    # Cross-Outlet-Auswahl: erst jetzt, nachdem alle Feeds durch sind, wird
+    # ueber alle Outlets hinweg nach Tier priorisiert und das Cycle-Limit
+    # angewendet (siehe _select_candidates).
+    selected, dropped = _select_candidates(candidates)
+
+    if dropped:
         logger.info(
-            "%s: %d Artikel im Feed, %d neu gepostet, %d wegen Sprache übersprungen, "
-            "%d zu alt/ohne Datum übersprungen, %d schon bekannt.",
-            outlet.name, len(articles), posted_count, skipped_language_count,
-            skipped_stale_count, already_known_count,
+            "%d Artikel wegen Cycle-Limit (max. %d, Tier 0/1 ausgenommen) übersprungen: %s",
+            len(dropped), MAX_POSTS_PER_CYCLE,
+            ", ".join(f"[{o.tier}] {o.name}: {a.title}" for o, a, _ in dropped),
+        )
+    for outlet, article, _ in dropped:
+        state.mark_seen(outlet.name, article.key, posted=False)
+        outlet_stats[outlet.name]["dropped_cap"] = outlet_stats[outlet.name].get("dropped_cap", 0) + 1
+
+    for outlet, article, language in selected:
+        posted = poster.post_article(outlet, article, settings.content_max_chars, language)
+        state.mark_seen(outlet.name, article.key, posted=posted)
+        if posted:
+            stats = outlet_stats[outlet.name]
+            stats["posted"] = stats.get("posted", 0) + 1
+            logger.info("Gepostet [%s]: [%s] %s - %s", language, outlet.tier, outlet.name, article.title)
+
+    for outlet in active_outlets:
+        stats = outlet_stats.get(outlet.name)
+        if stats is None:
+            continue
+        logger.info(
+            "%s: %d Artikel im Feed, %d neu gepostet, %d wegen Cycle-Limit übersprungen, "
+            "%d wegen Sprache übersprungen, %d zu alt/ohne Datum übersprungen, %d schon bekannt.",
+            outlet.name, stats["total"], stats.get("posted", 0), stats.get("dropped_cap", 0),
+            stats["skipped_language"], stats["skipped_stale"], stats["already_known"],
         )
 
 
