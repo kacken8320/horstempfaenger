@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Callable
 
 from src.feeds import Article
-from src.sources import afp, dw, reuters, tonline
+from src.sources import afp, dw, nhk, reuters, tonline
 
 # Registry fuer source_type-Werte, die eigene (nicht-generische) Fetch-Logik
 # brauchen - Wert ist eine Factory, die die feed_url aus der YAML entgegennimmt
@@ -17,4 +17,5 @@ CUSTOM_FETCHERS: dict[str, Callable[[str], Callable[[datetime], list[Article]]]]
     "reuters_google_news": reuters.make_fetch,
     "afp_google_news": afp.make_fetch,
     "dw_category_filter": dw.make_fetch,
+    "nhk_world_json": nhk.make_fetch,
 }

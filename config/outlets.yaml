@@ -164,6 +164,26 @@ outlets:
     feed_language: en
     active: true
 
+  # NHK World hat kein RSS mehr, aber eine interne JSON-Liste, die ihre eigene
+  # News-Startseite selbst laedt - liefert Titel, Kurzbeschreibung, Kategorie
+  # und Timestamp direkt mit (kein Scraping einzelner Artikelseiten noetig).
+  # source_type: nhk_world_json filtert defensiv auf Sport/Entertainment/etc.,
+  # auch wenn diese Kategorien im beobachteten Datensatz nie auftauchten
+  # (nur JAPAN/WORLD/ASIA/BIZTCH), siehe src/sources/nhk.py.
+  - name: NHK World
+    tier: "Tier 1"
+    flag: "🇯🇵"
+    country:
+      de: Japan
+      en: Japan
+    ausrichtung:
+      de: "staatlich finanzierter Auslandsrundfunk, sachlich/neutral (analog BBC/DW)"
+      en: "state-funded international broadcaster, factual/neutral (analogous to BBC/DW)"
+    feed_url: "https://www3.nhk.or.jp/nhkworld/data/news/all.json"
+    source_type: nhk_world_json
+    feed_language: en
+    active: true
+
   # --- Tier 2 ---
   # - name: Jiji
   #   tier: "Tier 2"
