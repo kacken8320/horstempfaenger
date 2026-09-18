@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from typing import Callable
 
-from src.afp import fetch_body
+from src.afp import fetch_article
 from src.feeds import Article, fetch_articles
 from src.googlenews import decode_real_url
 from src.textutils import strip_source_suffix, truncate
@@ -19,10 +19,17 @@ logger = logging.getLogger(__name__)
 # AFP hat kein offizielles RSS mehr - Discovery weiterhin ueber Google News
 # (Suche nach "AFP", gefiltert auf Quelle "afp.com"). Anders als bei Reuters
 # ist afp.com selbst aber NICHT bot-geschuetzt, deshalb holen wir hier
-# zusaetzlich den echten Artikel-Body (siehe src/afp.py) - volle "scraping"-
-# Behandlung statt nur Titel wie bei Reuters. Kein Kategorie-Filter (noch
-# keine verlaessliche Kategorie-Struktur auf afp.com gefunden) - wie bei
-# t-online/dpa wird der Quelle vertraut, dass sie i.d.R. on-topic ist.
+# zusaetzlich den echten Artikel-Body + die Kategorie (siehe src/afp.py) -
+# volle "scraping"-Behandlung statt nur Titel wie bei Reuters.
+#
+# Deny-Liste statt Allow-Liste: AFPs Kategorien sind ein Mix aus Themen
+# (Business and Economy, Digital World) UND Regionen (Middle East, Africa,
+# US News, Asia Business) - eine Allow-Liste wuerde vermutlich Regionen
+# uebersehen, die nicht in der bisherigen Stichprobe waren.
+DENY_CATEGORIES = {
+    "sports", "entertainment", "lifestyle", "fashion", "celebrity", "celebrities",
+    "society", "africa",
+}
 
 
 def make_fetch(feed_url: str) -> Callable[[datetime], list[Article]]:
@@ -46,8 +53,11 @@ def make_fetch(feed_url: str) -> Callable[[datetime], list[Article]]:
                 real_url = decode_real_url(article.link)
                 if not real_url:
                     continue
+                afp_article = fetch_article(real_url)
+                if (afp_article.category or "").lower() in DENY_CATEGORIES:
+                    continue
                 article.link = real_url
-                article.summary = truncate(fetch_body(real_url), INTRO_MAX_CHARS)
+                article.summary = truncate(afp_article.body, INTRO_MAX_CHARS)
             else:
                 article.summary = ""
 

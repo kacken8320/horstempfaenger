@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+from dataclasses import dataclass
 
 import requests
 
@@ -18,19 +19,39 @@ logger = logging.getLogger(__name__)
 # enthaelt, reicht ein non-greedy Match bis zum naechsten </div>.
 _BODY_RE = re.compile(r'afp-story-page__body">(.*?)</div>', re.DOTALL)
 
+# Jeder Artikel traegt direkt im Header (vor dem <h1>) genau einen Kategorie-
+# Tag (z.B. "Sports", "Business and Economy", "Digital World", "Middle East").
+# Achtung: derselbe CSS-Klassenname "afp-homepage-tag" taucht weiter unten im
+# "Latest stories"-Widget nochmal auf (fuer ANDERE Artikel) - deshalb explizit
+# an "afp-story-page__header" verankert, nicht einfach das erste Vorkommen im
+# ganzen Dokument nehmen.
+_CATEGORY_RE = re.compile(
+    r'afp-story-page__header">\s*<span class="afp-homepage-tag[^"]*">([^<]+)</span>'
+)
 
-def fetch_body(article_url: str) -> str:
-    """Liefert den reinen Fliesstext eines afp.com-Artikels, oder "" bei Fehler."""
+
+@dataclass
+class AfpArticle:
+    body: str
+    category: str | None
+
+
+def fetch_article(article_url: str) -> AfpArticle:
+    """Liefert Fliesstext + Kategorie eines afp.com-Artikels (leer/None bei Fehler)."""
     try:
         resp = requests.get(article_url, headers=REQUEST_HEADERS, timeout=15)
         resp.raise_for_status()
     except requests.RequestException as exc:
         logger.warning("AFP-Artikelseite nicht abrufbar: %s (%s)", article_url, exc)
-        return ""
+        return AfpArticle(body="", category=None)
 
-    match = _BODY_RE.search(resp.text)
-    if not match:
+    body_match = _BODY_RE.search(resp.text)
+    if not body_match:
         logger.warning("Kein Artikel-Body auf AFP-Seite gefunden: %s", article_url)
-        return ""
 
-    return strip_html(match.group(1))
+    category_match = _CATEGORY_RE.search(resp.text)
+
+    return AfpArticle(
+        body=strip_html(body_match.group(1)) if body_match else "",
+        category=category_match.group(1).strip() if category_match else None,
+    )
