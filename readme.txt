@@ -103,3 +103,27 @@ kosten (grobe schaetzung, $0.042 pro 1m input-token, output gratis):
   ~10k token x 1000 calls = 10m token): ca. $0.42-0.85/tag.
 - MIT dem lokalen vorfilter (~35 titel/call, ~500 token x 1000 calls): unter
   $0.05/tag. gesamt also grob $0.1/tag, ~$3/monat.
+
+
+TODO fuer dich (jev einschalten)
+--------------------------------
+
+1. openrouter-key holen: https://openrouter.ai/settings/keys (kein wartelisten-
+   zwang, kein extra typesafe-account). ggf. guthaben aufladen und dort ein
+   kostenlimit setzen.
+2. key eintragen:
+   - lokal: OPENROUTER_API_KEY=... in .env (siehe .env.example)
+   - railway: service -> variables -> OPENROUTER_API_KEY hinzufuegen
+   ohne key laeuft der bot wie vorher, im log steht nur eine warnung.
+3. railway: pruefen, ob data/ (state.db) auf einem persistenten volume liegt.
+   sonst ist der duplikat-pool nach jedem neustart leer.
+4. beim ersten echten lauf die logs lesen ("Jev: nicht relevant", "Duplikat
+   von ..."): wird zu viel/zu wenig verworfen? dann in src/jev.py anpassen:
+   RELEVANCE_PROFILE (was ich sehen will), RELEVANCE_DROP_BELOW (0.3),
+   DUPLICATE_MIN_PROB (0.6).
+5. entscheiden: sollen tier 0/1 (reuters, dpa, afp, ...) den relevanz-filter
+   umgehen? ja -> main.py RELEVANCE_EXEMPT_TIERS = {"Tier 0", "Tier 1"}.
+6. datenschutz: titel/summaries gehen an typesafe (ueber openrouter). policy
+   auf https://openrouter.ai/typesafe/jev-1.14 pruefen.
+7. modell-id in src/jev.py (JEV_MODEL) bleibt gepinnt; bei api-aenderungen
+   (alpha) hier nachziehen.
