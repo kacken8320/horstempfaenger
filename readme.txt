@@ -34,7 +34,7 @@ tier 2 (agencies)
 - efe
 - sda
 
-geplant: jev als entscheidungs-filter (noch NICHT implementiert)
+jev als entscheidungs-filter (implementiert, braucht OPENROUTER_API_KEY)
 ----------------------------------------------------------------
 
 jev (typesafe, ueber openrouter: POST https://openrouter.ai/api/alpha/decisions,
@@ -47,8 +47,9 @@ zwei entscheidungen pro frisch gefetchtem artikel (zentral in main.py, nach
 dem 5-min-freshness-check, vor dem tier-cap, gilt fuer ALLE outlets):
 
 1. relevanz: passt der artikel zu dem, was ich sehen will?
-   - die beschreibung steht als liste/satz im code (z.B. RELEVANCE_PROFILE in
-     einer eigenen datei), leicht aenderbar. beispiele: kategorien-pool
+   - die beschreibung steht in src/jev.py (RELEVANCE_PROFILE, RELEVANCE_TRUE/
+     FALSE), leicht aenderbar. welche tiers den check umgehen: main.py
+     RELEVANCE_EXEMPT_TIERS (aktuell leer = alle outlets). beispiele: kategorien-pool
      ("politics", "economy", "war", "finance", "china") ODER freitext
      ("alles zu politik, wirtschaft, technik, regionales aus deutschland, aber
      nichts mit celebrities").
@@ -56,7 +57,14 @@ dem 5-min-freshness-check, vor dem tier-cap, gilt fuer ALLE outlets):
    - nein -> verwerfen (als gesehen markieren, nicht posten).
 
 2. duplikat-check gegen den "pool von heute":
-   - pool = titel (+ tier) aller heute schon gepostet/akzeptierten artikel.
+   - pool = titel (+ tier) aller in den letzten 24h gepostet artikel
+     (state.db, tabelle pool_articles). jev bekommt NUR titel mit kurzer id;
+     url/tier bleiben lokal. ersetzt ein hoeherer tier einen pool-eintrag,
+     wird der alte als "superseded" aus dem pool genommen.
+   - lokaler vorfilter (ohne ki, wort-ueberlapp): nur die ~25 aehnlichsten +
+     10 neuesten pool-titel gehen an jev -> kleine calls, kein 32k-problem.
+     schwaeche: duplikat mit komplett anderen woertern/sprache kann
+     durchrutschen (dagegen die 10 neuesten).
    - frage = choice "berichtet einer dieser pool-eintraege ueber dasselbe
      ereignis?" (optionen: "none" + ein eintrag pro pool-titel).
    - nicht im pool -> posten, in den pool aufnehmen.
@@ -64,13 +72,15 @@ dem 5-min-freshness-check, vor dem tier-cap, gilt fuer ALLE outlets):
    - schon im pool, neue tier gleich oder NIEDRIGER -> verwerfen.
 
 entscheidungen / offene punkte:
+- ohne OPENROUTER_API_KEY laeuft der bot wie vorher, nur ohne jev (log-warnung).
 - fail-open: wenn jev/openrouter nicht antwortet, artikel durchlassen statt
   droppen (sonst schweigt der bot bei einem ausfall).
-- unsicherheit: unter einer confidence-schwelle (z.B. 0.6) lieber durchlassen.
+- schwellen (src/jev.py): relevanz wird nur verworfen bei P(relevant) < 0.3,
+  duplikat nur bei P >= 0.6 - im zweifel durchlassen.
+- ungetestet gegen die echte api (kein key beim bauen); logik nur mit fake-jev
+  getestet. beim ersten echten lauf logs pruefen, schwellen ggf. anpassen.
 - t0/t1 sind vom cycle-cap ausgenommen; ob sie auch den relevanz-filter
   umgehen sollen (z.B. reuters/dpa), ist noch zu entscheiden.
-- pool darf nicht ueber 32k token wachsen -> nur letzte ~12-24h und max. ~800
-  titel; aeltere raus.
 
 deployment (railway):
 - neue env var OPENROUTER_API_KEY (railway variables + lokale .env, steht
@@ -89,8 +99,7 @@ kosten (grobe schaetzung, $0.042 pro 1m input-token, output gratis):
 - annahme: 40 outlets, ~2000-4000 frische artikel/tag, davon ~1000 relevant.
 - entscheidung 1: ~250 token/call (titel+summary+profil) x 3000 = 0.75m
   token -> ca. $0.03/tag.
-- entscheidung 2: pool schickt jedes mal alle titel mit (~20 token/titel);
-  pool waechst von 0 auf ~1000 titel = im schnitt ~10k token x 1000 calls =
-  10m token -> ca. $0.42/tag, bei vollem pool (~20k) ca. $0.85/tag.
-- gesamt ca. $0.5-1 pro tag, also ~$15-30 pro monat. entscheidung 2 ist der
-  kostentreiber; pool-groesse begrenzen haelt es klein.
+- entscheidung 2 ohne vorfilter (ganzer pool, ~20 token/titel, im schnitt
+  ~10k token x 1000 calls = 10m token): ca. $0.42-0.85/tag.
+- MIT dem lokalen vorfilter (~35 titel/call, ~500 token x 1000 calls): unter
+  $0.05/tag. gesamt also grob $0.1/tag, ~$3/monat.

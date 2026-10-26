@@ -7,10 +7,11 @@ from datetime import datetime, timedelta, timezone
 from src.config import DATA_DIR, Outlet, load_outlets, load_settings
 from src.discord import DiscordPoster
 from src.feeds import Article, fetch_articles
+from src.jev import JevClient, shortlist_pool
 from src.lang import ALLOWED_LANGUAGES, detect_language
 from src.sources import CUSTOM_FETCHERS
 from src.sources.base import Source
-from src.state import StateStore
+from src.state import PoolEntry, StateStore
 from src.textutils import clean_author, strip_html, strip_source_suffix
 
 logging.basicConfig(
@@ -58,6 +59,55 @@ def _select_candidates(candidates: list[tuple]) -> tuple[list[tuple], list[tuple
     dropped = rest[budget:]
     selected.sort(key=lambda c: (_tier_rank(c[0].tier), c[1].published or EPOCH))
     return selected, dropped
+
+
+# Jev-Filter (siehe readme.txt): Tiers, die den Relevanz-Check umgehen. Leer =
+# gilt fuer alle Outlets.
+RELEVANCE_EXEMPT_TIERS: set[str] = set()
+# Pool "von heute" fuer den Duplikat-Check
+POOL_WINDOW = timedelta(hours=24)
+POOL_MAX_ENTRIES = 800
+
+
+def _dedupe_against_pool(
+    candidates: list[tuple], state: StateStore, jev: JevClient, source_stats: dict,
+) -> tuple[list[tuple], dict]:
+    """Verwirft Kandidaten, ueber deren Ereignis schon berichtet wurde (Pool aus
+    heute gepostetem + bereits angenommenen Kandidaten dieses Zyklus). Ist die
+    neue Tier hoeher als die des Pool-Treffers, kommt sie trotzdem durch und
+    ersetzt den alten Eintrag. Rueckgabe: (Ueberlebende, {(outlet, key): pool_id
+    des zu ersetzenden Eintrags})."""
+    if not jev.enabled or not candidates:
+        return candidates, {}
+
+    since = (datetime.now(timezone.utc) - POOL_WINDOW).strftime("%Y-%m-%d %H:%M:%S")
+    pool = state.pool_recent(since, POOL_MAX_ENTRIES)
+    next_temp_id = -1
+    supersede: dict[tuple, int] = {}
+    survivors = []
+
+    # beste Tier zuerst: bei zwei Outlets zur selben Story im selben Zyklus
+    # gewinnt das hoehere, das niedrigere fliegt als Duplikat raus.
+    for candidate in sorted(candidates, key=lambda c: (_tier_rank(c[0].tier), c[1].published or EPOCH)):
+        source, article, _ = candidate
+        match = jev.find_duplicate(article.title, shortlist_pool(article.title, pool))
+        if match is not None and _tier_rank(source.tier) >= _tier_rank(match.tier):
+            logger.info("Übersprungen (Duplikat von [%s] '%s'): [%s] %s",
+                        match.tier, match.title, source.tier, article.title)
+            state.mark_seen(
+                source.name, article.key, posted=False,
+                title=article.title, link=article.link, tier=source.tier,
+            )
+            stats = source_stats[source.name]
+            stats["dropped_duplicate"] = stats.get("dropped_duplicate", 0) + 1
+            continue
+        if match is not None and match.id > 0:
+            supersede[(source.name, article.key)] = match.id
+            pool = [e for e in pool if e.id != match.id]
+        survivors.append(candidate)
+        pool.insert(0, PoolEntry(id=next_temp_id, title=article.title, tier=source.tier))
+        next_temp_id -= 1
+    return survivors, supersede
 
 
 def _source_from_outlet(outlet: Outlet) -> Source:
@@ -114,7 +164,7 @@ def load_all_sources() -> list[Source]:
     return [_source_from_outlet(o) for o in load_outlets() if o.active]
 
 
-def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, settings) -> None:
+def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, settings, jev: JevClient) -> None:
     if not sources:
         logger.warning("Keine aktive Source - nichts zu tun.")
         return
@@ -143,7 +193,7 @@ def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, s
                 source.name, len(articles), len(sample_keys),
             )
 
-        stats = {"total": len(articles), "already_known": 0, "skipped_language": 0, "skipped_stale": 0}
+        stats = {"total": len(articles), "already_known": 0, "skipped_language": 0, "skipped_stale": 0, "skipped_irrelevant": 0}
         source_stats[source.name] = stats
 
         for article in sorted(articles, key=lambda a: a.published or EPOCH):
@@ -187,7 +237,21 @@ def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, s
                 stats["skipped_language"] += 1
                 continue
 
+            if jev.enabled and source.tier not in RELEVANCE_EXEMPT_TIERS:
+                if not jev.is_relevant(article.title, strip_html(article.summary)):
+                    logger.info("Übersprungen (Jev: nicht relevant): %s", article.title)
+                    state.mark_seen(
+                        source.name, article.key, posted=False,
+                        title=article.title, link=article.link, tier=source.tier,
+                    )
+                    stats["skipped_irrelevant"] += 1
+                    continue
+
             candidates.append((source, article, language))
+
+    # Duplikat-Check gegen den Pool von heute (vor dem Cycle-Limit, damit
+    # Duplikate kein Budget verbrauchen).
+    candidates, supersede = _dedupe_against_pool(candidates, state, jev, source_stats)
 
     # Cross-Source-Auswahl: erst jetzt, nachdem alle Feeds durch sind, wird
     # ueber alle Sources hinweg nach Tier priorisiert und das Cycle-Limit
@@ -214,6 +278,11 @@ def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, s
             title=article.title, link=article.link, tier=source.tier,
         )
         if posted:
+            if jev.enabled:
+                state.add_to_pool(article.title, source.tier, article.link, source.name)
+                replaced_id = supersede.get((source.name, article.key))
+                if replaced_id is not None:
+                    state.supersede_pool_entry(replaced_id)
             stats = source_stats[source.name]
             stats["posted"] = stats.get("posted", 0) + 1
             logger.info("Gepostet [%s]: [%s] %s - %s", language, source.tier, source.name, article.title)
@@ -224,9 +293,11 @@ def run_cycle(sources: list[Source], state: StateStore, poster: DiscordPoster, s
             continue
         logger.info(
             "%s: %d Artikel im Feed, %d neu gepostet, %d wegen Cycle-Limit übersprungen, "
-            "%d wegen Sprache übersprungen, %d zu alt/ohne Datum übersprungen, %d schon bekannt.",
+            "%d wegen Sprache übersprungen, %d zu alt/ohne Datum übersprungen, %d schon bekannt, "
+            "%d von Jev als irrelevant, %d als Duplikat verworfen.",
             source.name, stats["total"], stats.get("posted", 0), stats.get("dropped_cap", 0),
             stats["skipped_language"], stats["skipped_stale"], stats["already_known"],
+            stats["skipped_irrelevant"], stats.get("dropped_duplicate", 0),
         )
 
 
@@ -234,6 +305,9 @@ def main() -> None:
     settings = load_settings()
     poster = DiscordPoster(settings.discord_webhook_url, settings.discord_min_interval_seconds)
     state = StateStore(DATA_DIR / "state.db")
+    jev = JevClient(settings.openrouter_api_key)
+    if not jev.enabled:
+        logger.warning("OPENROUTER_API_KEY nicht gesetzt - Jev-Filter (Relevanz/Duplikate) ist AUS.")
 
     startup_sources = load_all_sources()
     logger.info("Starte RSS-Scraper, Poll-Intervall=%ss", settings.poll_interval_seconds)
@@ -244,7 +318,7 @@ def main() -> None:
     try:
         while True:
             sources = load_all_sources()  # neu laden, damit Config-Aenderungen ohne Neustart greifen
-            run_cycle(sources, state, poster, settings)
+            run_cycle(sources, state, poster, settings, jev)
             time.sleep(settings.poll_interval_seconds)
     except KeyboardInterrupt:
         logger.info("Beendet durch Benutzer.")

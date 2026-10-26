@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from dataclasses import dataclass
 from pathlib import Path
 
 SCHEMA = """
@@ -14,6 +15,16 @@ CREATE TABLE IF NOT EXISTS seen_articles (
     tier TEXT,
     PRIMARY KEY (outlet, article_key)
 );
+
+CREATE TABLE IF NOT EXISTS pool_articles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    tier TEXT NOT NULL,
+    link TEXT,
+    outlet TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    superseded INTEGER NOT NULL DEFAULT 0
+);
 """
 
 # title/link/tier kamen erst spaeter dazu (fuer query.py) - bereits bestehende
@@ -23,11 +34,18 @@ CREATE TABLE IF NOT EXISTS seen_articles (
 _MIGRATION_COLUMNS = ("title", "link", "tier")
 
 
+@dataclass
+class PoolEntry:
+    id: int
+    title: str
+    tier: str
+
+
 class StateStore:
     def __init__(self, db_path: Path):
         db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(db_path)
-        self._conn.execute(SCHEMA)
+        self._conn.executescript(SCHEMA)
         existing_columns = {row[1] for row in self._conn.execute("PRAGMA table_info(seen_articles)")}
         for column in _MIGRATION_COLUMNS:
             if column not in existing_columns:
@@ -70,6 +88,27 @@ class StateStore:
         ).fetchall()
         self._conn.row_factory = None
         return rows
+
+    def pool_recent(self, since_iso_utc: str, limit: int) -> list[PoolEntry]:
+        """Heutiger Pool fuer den Jev-Duplikat-Check: neueste zuerst, ohne
+        bereits durch eine hoehere Tier ersetzte Eintraege."""
+        rows = self._conn.execute(
+            "SELECT id, title, tier FROM pool_articles "
+            "WHERE superseded = 0 AND created_at >= ? ORDER BY id DESC LIMIT ?",
+            (since_iso_utc, limit),
+        ).fetchall()
+        return [PoolEntry(*row) for row in rows]
+
+    def add_to_pool(self, title: str, tier: str, link: str, outlet: str) -> None:
+        self._conn.execute(
+            "INSERT INTO pool_articles (title, tier, link, outlet) VALUES (?, ?, ?, ?)",
+            (title, tier, link, outlet),
+        )
+        self._conn.commit()
+
+    def supersede_pool_entry(self, pool_id: int) -> None:
+        self._conn.execute("UPDATE pool_articles SET superseded = 1 WHERE id = ?", (pool_id,))
+        self._conn.commit()
 
     def close(self) -> None:
         self._conn.close()

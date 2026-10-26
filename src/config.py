@@ -40,6 +40,7 @@ class Settings:
     content_max_chars: int
     discord_min_interval_seconds: float
     discord_webhook_url: str
+    openrouter_api_key: str = ""
 
 
 def load_outlets(path: Path = CONFIG_DIR / "outlets.yaml") -> list[Outlet]:
@@ -86,4 +87,6 @@ def load_settings(path: Path = CONFIG_DIR / "settings.yaml") -> Settings:
         content_max_chars=int(raw.get("content_max_chars", 500)),
         discord_min_interval_seconds=float(raw.get("discord_min_interval_seconds", 1.0)),
         discord_webhook_url=webhook_url,
+        # optional: ohne Key laeuft der Bot wie bisher, nur ohne Jev-Filter
+        openrouter_api_key=os.environ.get("OPENROUTER_API_KEY", "").strip(),
     )
